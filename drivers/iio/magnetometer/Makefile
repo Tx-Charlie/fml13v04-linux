@@ -40,3 +40,5 @@ obj-$(CONFIG_SI7210)			+= si7210.o
 obj-$(CONFIG_TI_TMAG5273)		+= tmag5273.o
 
 obj-$(CONFIG_YAMAHA_YAS530)		+= yamaha-yas530.o
+obj-$(CONFIG_MMC5633_I2C)	+= mmc5633_i2c.o
+obj-$(CONFIG_MMC5633_I3C)	+= mmc5633_i3c.o

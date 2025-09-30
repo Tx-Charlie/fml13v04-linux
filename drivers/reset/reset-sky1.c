@@ -1,58 +1,60 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  *
- * CIX System Reset Controller (SRC) driver
+ * SKY1 System Reset Controller (SRC) driver
  *
  * Author: Jerry Zhu <jerry.zhu@cixtech.com>
  */
 
+#include <linux/acpi.h>
 #include <linux/delay.h>
 #include <linux/mfd/syscon.h>
 #include <linux/module.h>
-#include <linux/of.h>
+#include <linux/of_device.h>
 #include <linux/platform_device.h>
-#include <linux/regmap.h>
 #include <linux/reset-controller.h>
+#include <linux/regmap.h>
+#include <dt-bindings/reset/sky1-reset.h>
+#include <dt-bindings/reset/sky1-reset-fch.h>
 
-#include <dt-bindings/reset/cix,sky1-system-control.h>
-#include <dt-bindings/reset/cix,sky1-s5-system-control.h>
-
-#define SKY1_RESET_SLEEP_MIN_US		50
-#define SKY1_RESET_SLEEP_MAX_US		100
-
+#define SKY1_RESET_SLEEP_MIN_US		10000
+#define SKY1_RESET_SLEEP_MAX_US		20000
 struct sky1_src_signal {
-	unsigned int offset;
-	unsigned int bit;
+	unsigned int offset, bit;
 };
 
 struct sky1_src_variant {
 	const struct sky1_src_signal *signals;
 	unsigned int signals_num;
+	struct reset_control_ops ops;
 };
 
 struct sky1_src {
 	struct reset_controller_dev rcdev;
-	const struct sky1_src_signal *signals;
 	struct regmap *regmap;
+	const struct sky1_src_signal *signals;
 };
 
-enum {
+enum sky1_src_registers {
 	CSU_PM_RESET				= 0x304,
-	SENSORFUSION_RESET			= 0x308,
-	SENSORFUSION_NOC_RESET			= 0x30c,
+	SENSORHUB_RESET				= 0x308,
+	SENSORHUB_NOC_RESET			= 0x30c,
+
 	RESET_GROUP0_S0_DOMAIN_0		= 0x400,
 	RESET_GROUP0_S0_DOMAIN_1		= 0x404,
 	RESET_GROUP1_USB_PHYS			= 0x408,
 	RESET_GROUP1_USB_CONTROLLERS		= 0x40c,
+
 	RESET_GROUP0_RCSU			= 0x800,
 	RESET_GROUP1_RCSU			= 0x804,
+
 };
 
-static const struct sky1_src_signal sky1_src_signals[] = {
+static const struct sky1_src_signal sky1_src_signals[SKY1_RESET_NUM] = {
 	/* reset group1 for s0 domain modules */
 	[SKY1_CSU_PM_RESET_N]		= { CSU_PM_RESET, BIT(0) },
-	[SKY1_SENSORFUSION_RESET_N]	= { SENSORFUSION_RESET, BIT(0) },
-	[SKY1_SENSORFUSION_NOC_RESET_N]	= { SENSORFUSION_NOC_RESET, BIT(0) },
+	[SKY1_SENSORHUB_RESET_N]	= { SENSORHUB_RESET, BIT(0) },
+	[SKY1_SENSORHUB_NOC_RESET_N]	= { SENSORHUB_NOC_RESET, BIT(0) },
 	[SKY1_DDRC_RESET_N]		= { RESET_GROUP0_S0_DOMAIN_0, BIT(0) },
 	[SKY1_GIC_RESET_N]		= { RESET_GROUP0_S0_DOMAIN_0, BIT(1) },
 	[SKY1_CI700_RESET_N]		= { RESET_GROUP0_S0_DOMAIN_0, BIT(2) },
@@ -203,20 +205,16 @@ static const struct sky1_src_signal sky1_src_signals[] = {
 	[SKY1_RCSU_USB3_TYPEC_HOST1_RESET_N]	= { RESET_GROUP1_RCSU, BIT(17) },
 	[SKY1_RCSU_USB3_TYPEC_HOST2_RESET_N]	= { RESET_GROUP1_RCSU, BIT(18) },
 	[SKY1_VPU_RCSU_RESET_N]			= { RESET_GROUP1_RCSU, BIT(19) },
+
 };
 
-static const struct sky1_src_variant variant_sky1 = {
-	.signals = sky1_src_signals,
-	.signals_num = ARRAY_SIZE(sky1_src_signals),
+enum sky1_src_fch_registers {
+	FCH_SW_RST_FUNC			= 0x008,
+	FCH_SW_RST_BUS			= 0x00c,
+	FCH_SW_XSPI			= 0x010,
 };
 
-enum {
-	FCH_SW_RST_FUNC			= 0x8,
-	FCH_SW_RST_BUS			= 0xc,
-	FCH_SW_XSPI			= 0x10,
-};
-
-static const struct sky1_src_signal sky1_src_fch_signals[] = {
+static const struct sky1_src_signal sky1_src_fch_signals[SKY1_FCH_RESET_NUM] = {
 	/* resets for fch_sw_rst_func */
 	[SW_I3C0_RST_FUNC_G_N]	= { FCH_SW_RST_FUNC, BIT(0) },
 	[SW_I3C0_RST_FUNC_I_N]	= { FCH_SW_RST_FUNC, BIT(1) },
@@ -253,115 +251,171 @@ static const struct sky1_src_signal sky1_src_fch_signals[] = {
 	[SW_XSPI_SYS_RST_N]	= { FCH_SW_XSPI, BIT(1) },
 };
 
-static const struct sky1_src_variant variant_sky1_fch = {
-	.signals = sky1_src_fch_signals,
-	.signals_num = ARRAY_SIZE(sky1_src_fch_signals),
-};
-
 static struct sky1_src *to_sky1_src(struct reset_controller_dev *rcdev)
 {
 	return container_of(rcdev, struct sky1_src, rcdev);
+}
+
+static int sky1_reset_update(struct sky1_src *sky1src,
+			     unsigned long id, unsigned int value)
+{
+	const struct sky1_src_signal *signal = &sky1src->signals[id];
+
+	return regmap_update_bits(sky1src->regmap,
+				  signal->offset, signal->bit, value);
 }
 
 static int sky1_reset_set(struct reset_controller_dev *rcdev,
 			  unsigned long id, bool assert)
 {
 	struct sky1_src *sky1src = to_sky1_src(rcdev);
-	const struct sky1_src_signal *signal = &sky1src->signals[id];
-	unsigned int value = assert ? 0 : signal->bit;
+	const unsigned int bit = sky1src->signals[id].bit;
+	unsigned int value = assert ? 0 : bit;
 
-	return regmap_update_bits(sky1src->regmap,
-				  signal->offset, signal->bit, value);
+	return sky1_reset_update(sky1src, id, value);
 }
 
-static int sky1_reset_assert(struct reset_controller_dev *rcdev,
+static int sky1_reset(struct reset_controller_dev *rcdev,
 			     unsigned long id)
 {
 	sky1_reset_set(rcdev, id, true);
 	usleep_range(SKY1_RESET_SLEEP_MIN_US,
 		     SKY1_RESET_SLEEP_MAX_US);
-	return 0;
-}
 
-static int sky1_reset_deassert(struct reset_controller_dev *rcdev,
-			       unsigned long id)
-{
 	sky1_reset_set(rcdev, id, false);
+
+	/*
+	 * Ensure component is taken out reset state by sleeping also after
+	 * deasserting the reset, Otherwise, the component may not be ready
+	 * for operation.
+	 */
 	usleep_range(SKY1_RESET_SLEEP_MIN_US,
 		     SKY1_RESET_SLEEP_MAX_US);
 	return 0;
 }
 
-static int sky1_reset(struct reset_controller_dev *rcdev,
-		      unsigned long id)
+static int sky1_reset_assert(struct reset_controller_dev *rcdev,
+			     unsigned long id)
 {
-	sky1_reset_assert(rcdev, id);
-	sky1_reset_deassert(rcdev, id);
-	return 0;
+	return sky1_reset_set(rcdev, id, true);
+}
+
+static int sky1_reset_deassert(struct reset_controller_dev *rcdev,
+			       unsigned long id)
+{
+	return sky1_reset_set(rcdev, id, false);
 }
 
 static int sky1_reset_status(struct reset_controller_dev *rcdev,
-			     unsigned long id)
+			       unsigned long id)
 {
 	unsigned int value = 0;
-	struct sky1_src *sky1src = to_sky1_src(rcdev);
-	const struct sky1_src_signal *signal = &sky1src->signals[id];
-
-	regmap_read(sky1src->regmap, signal->offset, &value);
+	struct sky1_src *sky1_src = to_sky1_src(rcdev);
+	const struct sky1_src_signal *signal = &sky1_src->signals[id];
+	regmap_read(sky1_src->regmap, signal->offset, &value);
 	return !(value & signal->bit);
-}
 
-static const struct reset_control_ops sky1_src_ops = {
-	.reset    = sky1_reset,
-	.assert   = sky1_reset_assert,
-	.deassert = sky1_reset_deassert,
-	.status   = sky1_reset_status
+}
+static const struct sky1_src_variant variant_sky1 = {
+	.signals = sky1_src_signals,
+	.signals_num = ARRAY_SIZE(sky1_src_signals),
+	.ops = {
+		.reset	  = sky1_reset,
+		.assert   = sky1_reset_assert,
+		.deassert = sky1_reset_deassert,
+		.status   = sky1_reset_status,
+	},
+};
+
+static const struct sky1_src_variant variant_sky1_fch = {
+	.signals = sky1_src_fch_signals,
+	.signals_num = ARRAY_SIZE(sky1_src_fch_signals),
+	.ops = {
+		.reset	  = sky1_reset,
+		.assert   = sky1_reset_assert,
+		.deassert = sky1_reset_deassert,
+		.status	  = sky1_reset_status,
+	},
 };
 
 static int sky1_reset_probe(struct platform_device *pdev)
 {
 	struct sky1_src *sky1src;
 	struct device *dev = &pdev->dev;
-	const struct sky1_src_variant *variant;
+	struct resource *res;
+	void __iomem *base;
+	const struct sky1_src_variant *variant = ACPI_COMPANION(dev) ?
+		acpi_device_get_match_data(dev) : of_device_get_match_data(dev);
+	struct regmap_config config = {
+		.reg_bits = 32,
+		.val_bits = 32,
+		.reg_stride = 4,
+		.name = "src",
+	};
 
 	sky1src = devm_kzalloc(dev, sizeof(*sky1src), GFP_KERNEL);
 	if (!sky1src)
 		return -ENOMEM;
 
-	variant = of_device_get_match_data(dev);
+	sky1src->signals = variant->signals;
 
-	sky1src->regmap = device_node_to_regmap(dev->of_node);
+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	if (!res)
+		return -ENOENT;
+
+	base = devm_ioremap(dev, res->start, resource_size(res));
+	if (!base)
+		return -ENOMEM;
+
+	sky1src->regmap = devm_regmap_init_mmio(dev, base, &config);
 	if (IS_ERR(sky1src->regmap)) {
-		return dev_err_probe(dev, PTR_ERR(sky1src->regmap),
-				     "Unable to get sky1-src regmap");
+		dev_err(dev, "Unable to get sky1-src regmap");
+		return PTR_ERR(sky1src->regmap);
 	}
 
-	sky1src->signals = variant->signals;
 	sky1src->rcdev.owner     = THIS_MODULE;
 	sky1src->rcdev.nr_resets = variant->signals_num;
-	sky1src->rcdev.ops       = &sky1_src_ops;
+	sky1src->rcdev.ops       = &variant->ops;
 	sky1src->rcdev.of_node   = dev->of_node;
 	sky1src->rcdev.dev       = dev;
 
 	return devm_reset_controller_register(dev, &sky1src->rcdev);
 }
 
-static const struct of_device_id sky1_sysreg_of_match[] = {
-	{ .compatible = "cix,sky1-system-control", .data = &variant_sky1_fch},
-	{ .compatible = "cix,sky1-s5-system-control", .data = &variant_sky1},
+static const struct of_device_id sky1_reset_dt_ids[] = {
+	{ .compatible = "cix,sky1-src", .data = &variant_sky1 },
+	{ .compatible = "cix,sky1-src-fch", .data = &variant_sky1_fch },
+	{ /* sentinel */ },
+};
+MODULE_DEVICE_TABLE(of, sky1_reset_dt_ids);
+
+static const struct acpi_device_id sky1_reset_acpi_match[] = {
+	{ "CIXHA020", .driver_data = (kernel_ulong_t)&variant_sky1 },
+	{ "CIXHA021", .driver_data = (kernel_ulong_t)&variant_sky1_fch },
 	{},
 };
-MODULE_DEVICE_TABLE(of, sky1_sysreg_of_match);
+MODULE_DEVICE_TABLE(acpi, sky1_reset_acpi_match);
 
 static struct platform_driver sky1_reset_driver = {
 	.probe	= sky1_reset_probe,
 	.driver = {
-		.name		= "cix,sky1-rst",
-		.of_match_table = sky1_sysreg_of_match,
+		.name		= KBUILD_MODNAME,
+		.of_match_table	= sky1_reset_dt_ids,
+		.acpi_match_table = ACPI_PTR(sky1_reset_acpi_match),
 	},
 };
-module_platform_driver(sky1_reset_driver)
+static int __init reset_sky1_init(void)
+{
+	return platform_driver_register(&sky1_reset_driver);
+}
+subsys_initcall(reset_sky1_init);
+
+static void __exit reset_sky1_exit(void)
+{
+	platform_driver_unregister(&sky1_reset_driver);
+}
+module_exit(reset_sky1_exit);
 
 MODULE_AUTHOR("Jerry Zhu <jerry.zhu@cixtech.com>");
 MODULE_DESCRIPTION("Cix Sky1 reset driver");
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("GPL v2");

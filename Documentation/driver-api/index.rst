@@ -149,3 +149,4 @@ Subsystem-specific APIs
    wmi
    xilinx/index
    zorro
+   pin-control-acpi

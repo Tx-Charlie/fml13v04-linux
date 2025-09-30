@@ -62,4 +62,11 @@ config ANDROID_BINDER_ALLOC_KUNIT_TEST
 	  test-specific freelist, which allows this KUnit module to be loaded
 	  for testing without interfering with a running system.
 
+config MPAM_ARCH
+	tristate "MPAM module based architecture driver"
+
+config MPAM_POLICY
+	tristate "MPAM policy module"
+	depends on ANDROID_MPAM_ARCH
+
 endmenu

@@ -49,3 +49,7 @@ source "drivers/staging/axis-fifo/Kconfig"
 source "drivers/staging/vme_user/Kconfig"
 
 endif # STAGING
+source "drivers/staging/android/Kconfig"
+source "drivers/staging/hungtask/Kconfig"
+source "drivers/staging/hievent/Kconfig"
+source "drivers/staging/hisysevent/Kconfig"

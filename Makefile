@@ -2371,3 +2371,5 @@ FORCE:
 # Declare the contents of the PHONY variable as phony.  We keep that
 # information in a variable so we can use it in if_changed and friends.
 .PHONY: $(PHONY)
+export TARGET_SOC_PLATFORM := sky1
+LINUXINCLUDE += -I$(srctree)/drivers/soc/cix/ap/platform/$(TARGET_SOC_PLATFORM)

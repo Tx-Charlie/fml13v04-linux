@@ -93,3 +93,8 @@ config PCI_J721E_EP
 	  core.
 
 endmenu
+config PCI_SKY1
+	bool
+	bool "CIX SKY1 PCIe platform host controller"
+	select PCI_SKY1
+	  controller in host mode. CIX SKY1 PCIe controller uses Cadence PCIe

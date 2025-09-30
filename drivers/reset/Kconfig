@@ -424,3 +424,11 @@ source "drivers/reset/sti/Kconfig"
 source "drivers/reset/tegra/Kconfig"
 
 endif
+	tristate "Sky1 Reset Driver"
+	depends on ARCH_CIX
+	  This enables the reset controller driver for Sky1 SoCs.
+config RESET_FCH_SKY1
+	tristate "Sky1 FCH Reset Driver"
+	  This enables the fch reset controller driver for Sky1 SoCs.
+	tristate "Sky1 Audss Reset Driver"
+	  This enables the audss reset controller driver for Sky1 SoCs.

@@ -867,3 +867,8 @@ config PWM_XILINX
 	  allowing driver logic to be written in safe Rust.
 
 endif
+config PWM_SKY1
+	tristate "SKY1 PWM support"
+	depends on ARCH_CIX || COMPILE_TEST
+	  Generic PWM framework driver for cix sky1 and later cix sky1 SoCs.
+	  will be called pwm-sky1.

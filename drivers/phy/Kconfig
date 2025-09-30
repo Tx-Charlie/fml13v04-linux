@@ -202,5 +202,6 @@ source "drivers/phy/sunplus/Kconfig"
 source "drivers/phy/tegra/Kconfig"
 source "drivers/phy/ti/Kconfig"
 source "drivers/phy/xilinx/Kconfig"
+source "drivers/phy/cix/Kconfig"
 
 endmenu

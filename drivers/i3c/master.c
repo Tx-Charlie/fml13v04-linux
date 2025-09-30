@@ -841,9 +841,10 @@ static void i3c_masterdev_release(struct device *dev)
 	i3c_master_free_i3c_dev(master->this);
 }
 
-static const struct device_type i3c_masterdev_type = {
+const struct device_type i3c_masterdev_type = {
 	.groups	= i3c_masterdev_groups,
 };
+EXPORT_SYMBOL_GPL(i3c_masterdev_type);
 
 static void i3c_master_shutdown(struct i3c_master_controller *master)
 {
@@ -3593,6 +3594,18 @@ void i3c_dev_free_ibi_locked(struct i3c_dev_desc *dev)
 	dev->ibi = NULL;
 }
 EXPORT_SYMBOL_GPL(i3c_dev_free_ibi_locked);
+
+int i3c_for_each_dev(void *data, int (*fn)(struct device *, void *))
+{
+	int res;
+
+	mutex_lock(&i3c_core_lock);
+	res = bus_for_each_dev(&i3c_bus_type, NULL, data, fn);
+	mutex_unlock(&i3c_core_lock);
+
+	return res;
+}
+EXPORT_SYMBOL_GPL(i3c_for_each_dev);
 
 static int __init i3c_init(void)
 {

@@ -891,3 +891,8 @@ obj-$(CONFIG_SND_SOC_LPASS_TX_MACRO)	+= snd-soc-lpass-tx-macro.o
 
 # Mux
 obj-$(CONFIG_SND_SOC_SIMPLE_MUX)	+= snd-soc-simple-mux.o
+snd-soc-sn6040-objs := sn6040.o
+# Dummy codec
+snd-soc-dummy-codec-objs := dummy-codec.o
+obj-$(CONFIG_SND_SOC_SN6040)	+= snd-soc-sn6040.o
+obj-$(CONFIG_SND_SOC_DUMMY_CODEC) += snd-soc-dummy-codec.o
