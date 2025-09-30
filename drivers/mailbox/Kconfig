@@ -410,3 +410,9 @@ config AXIADO_MAILBOX
 	  If unsure, say N.
 
 endif
+	tristate "CIX Mailbox"
+	depends on ARCH_CIX
+	  Mailbox implementation for CIX IPC system. The controller supports
+	  10 mailbox channels with different operating mode and every channel
+	  is unidirectional. Say Y here if you want to use the CIX Mailbox
+	  support.

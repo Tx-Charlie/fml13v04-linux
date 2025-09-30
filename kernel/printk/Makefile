@@ -9,3 +9,4 @@ printk_support-y	             := printk_ringbuffer.o
 printk_support-$(CONFIG_SYSCTL)	     += sysctl.o
 
 obj-$(CONFIG_PRINTK_RINGBUFFER_KUNIT_TEST) += printk_ringbuffer_kunit_test.o
+obj-$(CONFIG_PRINTK)	+= printk_ringbuffer.o

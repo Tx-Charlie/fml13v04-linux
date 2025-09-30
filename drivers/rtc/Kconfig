@@ -2175,3 +2175,8 @@ config RTC_DRV_HID_SENSOR_TIME
 	  rtc-hid-sensor-time.
 
 endif # RTC_CLASS
+config RTC_DRV_RX8900
+	tristate "Third Party RX8900 Driver"
+	  If you say yes here you get support for RTC function in SKY1
+	  EVB.
+	  will be called rtc-rx8900.

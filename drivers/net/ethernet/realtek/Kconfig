@@ -127,3 +127,18 @@ config RTASE
 	  will be called rtase. This is recommended.
 
 endif # NET_VENDOR_REALTEK
+config R8125
+	tristate "Realtek 8125 ethernet support"
+	  will be called r8125.  This is recommended
+config R8126
+	tristate "Realtek 8126 ethernet support"
+	  RTL8126 5GBit Ethernet
+	  will be called r8126.  This is recommended
+config R8127
+	tristate "Realtek 8127 ethernet support"
+	  RTL8127 5GBit Ethernet
+	  will be called r8127.  This is recommended
+config PG_DRV
+	tristate "Realtek pg_tool driver support"
+	  Say Y here if you have a Realtek Ethernet adapter and want to use pg_tool
+	  will be called pgdrv..  This is recommended

@@ -113,3 +113,25 @@ config USB_CDNS3_STARFIVE
 endif # USB_CDNS3
 
 endif # USB_CDNS_SUPPORT
+config USB_CDNSP
+	tristate "Cadence USBSSP Dual-Role Controller"
+	  Say Y here if your system has a Cadence USBSSP dual-role controller.
+	  If you choose to build this driver is a dynamically linked
+	  as module, the module will be called cdnsp.ko.
+if USB_CDNSP
+	bool "Cadence USBSSP device controller"
+	depends on USB_GADGET=y || USB_GADGET=USB_CDNSP
+	  Cadence USBSSP-DEV driver.
+	  This controller supports FF, HS, SS, SSP mode. It doesn't support
+	  LS mode.
+	bool "Cadence USB3 host controller"
+	depends on USB=y || USB=USB_CDNSP
+	  Host controller is compliant with XHCI so it will uses
+config USB_CDNSP_PCI_WRAP
+	tristate "PCI base on Cadence CDNSP Dual-Role Controller"
+	default USB_CDNSP
+config USB_CDNSP_SKY1
+	tristate "sky1 base on Cadence CDNSP Dual-Role Controller"
+	depends on OF || COMPILE_TEST
+	  Say Y here if sky1 has a Cadence CDNSP dual-role controller.
+	  module, the module will be called cdnsp-sky1.ko.

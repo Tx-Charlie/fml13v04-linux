@@ -13,3 +13,7 @@ obj-$(CONFIG_MOST)		+= most/
 obj-$(CONFIG_GREYBUS)		+= greybus/
 obj-$(CONFIG_BCM2835_VCHIQ)	+= vc04_services/
 obj-$(CONFIG_XIL_AXIS_FIFO)	+= axis-fifo/
+obj-$(CONFIG_ASHMEM)		+= android/
+obj-$(CONFIG_DFX_HUNGTASK)      += hungtask/
+obj-$(CONFIG_HIEVENT) 		+= hievent/
+obj-$(CONFIG_HISYSEVENT) 	+= hisysevent/

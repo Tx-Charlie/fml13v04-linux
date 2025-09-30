@@ -1,72 +1,45 @@
-# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+# SPDX-License-Identifier: GPL-2.0
 %YAML 1.2
 ---
 $id: http://devicetree.org/schemas/pinctrl/cix,sky1-pinctrl.yaml#
 $schema: http://devicetree.org/meta-schemas/core.yaml#
 
-title: Cix Sky1 Soc Pin Controller
+title: Cix Sky1 IOMUX Controller
 
 maintainers:
-  - Gary Yang <gary.yang@cixtech.com>
+  - Jerry Zhu <Jerry.Zhu@cixtech.com>
 
-description:
-  The pin-controller is used to control Soc pins. There are two pin-controllers
-  on Cix Sky1 platform. one is used under S0 state, the other one is used under
-  S0 and S5 state.
 
 properties:
   compatible:
-    enum:
-      - cix,sky1-pinctrl
-      - cix,sky1-pinctrl-s5
+    const: cix,sky1-iomuxc
 
   reg:
-    items:
-      - description: gpio base
+    maxItems: 1
 
+# Client device subnode's properties
 patternProperties:
-  '-cfg$':
+  'grp$':
     type: object
-    additionalProperties: false
-
     description:
-      A pinctrl node should contain at least one subnode representing the
-      pinctrl groups available on the machine.
+      Pinctrl node's client devices use subnodes for desired pin configuration.
+      Client device subnodes use below standard properties.
 
-    patternProperties:
-      'pins$':
-        type: object
-        additionalProperties: false
-
+    properties:
+      sky1,pins:
         description:
-          Each subnode will list the pins it needs, and how they should
-          be configured, with regard to muxer configuration, bias pull,
-          and drive strength.
+          each entry consists of 1 short represents for mux&conf reg and 1 integer
+        items:
+          items:
+            - description: |
+                "mux&conf_reg" indicates the offset of mux&conf register.
+            - description: |
+                "mux&conf_val" indicates the mux&conf value to be applied.
 
-        allOf:
-          - $ref: pincfg-node.yaml#
-          - $ref: pinmux-node.yaml#
+    required:
+      - sky1,pins
 
-        properties:
-          pinmux:
-            description:
-              Values are constructed from pin number and mux setting, pin
-              number is left shifted by 8 bits, then ORed with mux setting
-
-          bias-disable: true
-
-          bias-pull-up: true
-
-          bias-pull-down: true
-
-          drive-strength:
-            description:
-              typical current when output high level.
-            enum: [ 2, 3, 5, 6, 8, 9, 11, 12, 13, 14, 17, 18, 20, 21, 23,
-                    24 ]
-
-        required:
-          - pinmux
+    additionalProperties: false
 
 required:
   - compatible
@@ -75,17 +48,18 @@ required:
 additionalProperties: false
 
 examples:
+  # Pinmux controller node
   - |
-    #define CIX_PAD_GPIO012_FUNC_GPIO012 (11 << 8 | 0x0)
-    pinctrl@4170000 {
-        compatible = "cix,sky1-pinctrl";
-        reg = <0x4170000 0x1000>;
+    iomuxc: pinctrl@04160000 {
+        compatible = "cix,sky1-iomuxc";
+	reg = <0x0 0x04160000 0x0 0x10000>;
 
-        wifi_vbat_gpio: wifi-vbat-gpio-cfg {
-            pins {
-                pinmux = <CIX_PAD_GPIO012_FUNC_GPIO012>;
-                bias-pull-up;
-                drive-strength = <8>;
-           };
+        pinctrl_uart2: uart2grp {
+            sky1,pins =<
+                0x14c 0x1b
+                0x150 0x1b
+            >;
         };
     };
+
+...

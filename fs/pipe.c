@@ -32,6 +32,9 @@
 #include <asm/ioctls.h>
 
 #include "internal.h"
+#ifdef CONFIG_PLAT_FDLEAK
+#include <linux/soc/cix/dst_fdleak.h>
+#endif
 
 /*
  * New pipe buffers will be restricted to this size while the user is exceeding
@@ -825,6 +828,9 @@ pipe_release(struct inode *inode, struct file *file)
 	mutex_unlock(&pipe->mutex);
 
 	put_pipe_info(inode, pipe);
+#ifdef CONFIG_PLAT_FDLEAK
+	fdleak_report(FDLEAK_WP_PIPE, 1);
+#endif
 	return 0;
 }
 
@@ -1127,6 +1133,9 @@ static int do_pipe2(int __user *fildes, int flags)
 		} else {
 			fd_install(fd[0], files[0]);
 			fd_install(fd[1], files[1]);
+#ifdef CONFIG_PLAT_FDLEAK
+			fdleak_report(FDLEAK_WP_PIPE, 0);
+#endif
 		}
 	}
 	return error;

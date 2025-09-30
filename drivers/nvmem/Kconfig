@@ -584,3 +584,6 @@ config NVMEM_QORIQ_EFUSE
 	  will be called nvmem_qoriq_efuse.
 
 endif # NVMEM
+config NVMEM_SKY1
+	bool "Cix SKY1 SoC nvmem firmware support"
+	depends on ARCH_CIX
