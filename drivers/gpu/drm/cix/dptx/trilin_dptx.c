@@ -3152,7 +3152,7 @@ int trilin_dp_probe(struct trilin_dpsub *dpsub, struct drm_device *drm)
 	int ret;
 	const char *str_prop;
 	u32 is_insmod = 0;
-	u32 psr_default_on = 1;
+	u32 psr_default_on = 0;
 
 	dev = &pdev->dev;
 	fwnode_edp_panel = fwnode_find_reference(dev->fwnode, "edp-panel", 0);
