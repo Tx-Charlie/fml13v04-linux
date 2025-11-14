@@ -898,10 +898,10 @@ int trilin_dp_encoder_compute_config(struct drm_encoder *encoder,
 	u8 max_lanes = dp->link_config.max_lanes;
 	int link_rate = max_rate;
 
-	if (!(info_formats & DRM_COLOR_FORMAT_RGB444)) {
-		info_formats |= DRM_COLOR_FORMAT_RGB444;
-		DP_WARN("info_format=%0x, force support RGB444", info->color_formats);
-	}
+	// if (!(info_formats & DRM_COLOR_FORMAT_RGB444)) {
+	// 	info_formats |= DRM_COLOR_FORMAT_RGB444;
+	// 	DP_WARN("info_format=%0x, force support RGB444", info->color_formats);
+	// }
 
 	const int COMMON_COLORS_FORMATS[] = {
 		DRM_COLOR_FORMAT_RGB444, DRM_COLOR_FORMAT_YCBCR422, DRM_COLOR_FORMAT_YCBCR420};
