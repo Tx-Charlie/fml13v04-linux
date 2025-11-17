@@ -96,3 +96,9 @@ config TYPEC_MUX_WCD939X_USBSS
 	  If compiled as a module, the module will be named wcd939x-usbss.
 
 endmenu
+config TYPEC_MUX_PI3DPX1207
+        tristate "Pericom PI3DPX1207 Type-C cross switch driver"
+        depends on I2C
+        help
+          Say Y or M if your system has a Pericom PI3DPX1207 Type-C cross
+          switch / mux chip found on some devices with a Type-C port.
