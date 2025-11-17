@@ -46,4 +46,11 @@ config TYPEC_MUX_NB7VPQ904M
 	  Say Y or M if your system has a On Semiconductor NB7VPQ904M Type-C
 	  redriver chip found on some devices with a Type-C port.
 
+config TYPEC_MUX_PI3DPX1207
+        tristate "Pericom PI3DPX1207 Type-C cross switch driver"
+        depends on I2C
+        help
+          Say Y or M if your system has a Pericom PI3DPX1207 Type-C cross
+          switch / mux chip found on some devices with a Type-C port.
+
 endmenu
