@@ -378,7 +378,7 @@ trilin_dp_connector_mode_valid(struct drm_connector *connector,
 	//struct trilin_connector *conn = connector_to_trilin(connector);
 	const struct drm_display_info *info = &connector->display_info;
 	u8 max_lanes = dp->link_config.max_lanes;
-	u8 minbpp = 6 * 3; //Fixme: minbpp config from YUV andr RGB format;
+	u8 minbpp = 8 * 3; //Fixme: minbpp config from YUV andr RGB format;
 	int max_rate = dp->link_config.max_rate;
 	int rate;
 	int clock = mode->clock;
@@ -864,7 +864,7 @@ static bool compute_available_clock_rate(struct trilin_dp *dp,
 		struct drm_connector_state *connector_state, u8 suggest_bpc,
 		int clock, int color_format, int *rt_bpc, int *rt_bpp)
 {
-	int min_bpc = (color_format == DRM_COLOR_FORMAT_RGB444) ? 6 : 8;
+	int min_bpc = (color_format == DRM_COLOR_FORMAT_RGB444) ? 8 : 8;
 	int bpc = max(suggest_bpc, min_bpc);
 	int bpp;
 	u8 max_lanes = dp->link_config.max_lanes;
@@ -874,6 +874,7 @@ static bool compute_available_clock_rate(struct trilin_dp *dp,
 		bpc = trilin_dp_cal_bpc(dp, connector_state, bpc);
 		bpp = trilin_dp_cal_bpp(bpc, color_format);
 		rate = trilin_dp_max_rate(max_rate, max_lanes, bpp);
+
 		if (clock <= rate) {
 			*rt_bpc = bpc;
 			*rt_bpp = bpp;
