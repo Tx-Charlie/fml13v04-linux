@@ -24,18 +24,18 @@
 #include <linux/of_gpio.h>
 #endif
 
-#define PI3DPX1207C_CONF			0x03
+#define PI3DPX1207C_CONF 0x03
 
-#define PI3DPX1207C_CONF_OPEN			0x02
-#define PI3DPX1207C_CONF_SWAP			0x10
-#define PI3DPX1207C_CONF_4LANE_DP		0x22
-#define PI3DPX1207C_CONF_USB3			0x42
-#define PI3DPX1207C_CONF_USB3_AND_2LANE_DP	0x62
-#define PI3DPX1207C_CONF_4LANE_DP_FLIP_AUX_NOT_FLIP  0x22
-#define PI3DPX1207C_CONF_4LANE_DP_FLIP_AUX_FLIP  0x32
-#define PI3DPX1207C_CONF_USB3_FLIP  0x52
-#define PI3DPX1207C_CONF_USB3_AND_2LANE_DP_FILP  0x72
-#define PI3DPX1207C_CONF_USB3_AND_2LANE_DP_FILP_AUX_NOT_FILP  0x82
+#define PI3DPX1207C_CONF_OPEN 0x02
+#define PI3DPX1207C_CONF_SWAP 0x10
+#define PI3DPX1207C_CONF_4LANE_DP 0x22
+#define PI3DPX1207C_CONF_USB3 0x42
+#define PI3DPX1207C_CONF_USB3_AND_2LANE_DP 0x62
+#define PI3DPX1207C_CONF_4LANE_DP_FLIP_AUX_NOT_FLIP 0x22
+#define PI3DPX1207C_CONF_4LANE_DP_FLIP_AUX_FLIP 0x32
+#define PI3DPX1207C_CONF_USB3_FLIP 0x52
+#define PI3DPX1207C_CONF_USB3_AND_2LANE_DP_FILP 0x72
+#define PI3DPX1207C_CONF_USB3_AND_2LANE_DP_FILP_AUX_NOT_FILP 0x82
 
 struct pi3dpx1207c {
 	struct i2c_client *client;
@@ -49,29 +49,38 @@ struct pi3dpx1207c {
 	u8 force_hpd;
 };
 
+static int redriver_switch = 0;
+static int __init redriver_switch_setup(char *str)
+{
+	redriver_switch = 1;
+	return 1;
+}
+__setup("redriver_switch", redriver_switch_setup);
+module_param(redriver_switch, int, 0644);
+
 static int pi3dpx1207c_set_conf(struct pi3dpx1207c *pi, u8 new_conf)
 {
 	int ret = 0;
-	u8 write_conf[5] = {0};
+	u8 write_conf[5] = { 0 };
 
-	dev_err(&pi->client->dev, "%s: %d -> %x\n", __func__, __LINE__, new_conf);
+	dev_err(&pi->client->dev, "%s: %d -> %x\n", __func__, __LINE__,
+		new_conf);
 
 	if (pi->conf == new_conf)
 		return 0;
-
 
 	write_conf[0] = 0x13;
 	write_conf[1] = 0x11;
 	write_conf[2] = 0x20;
 	write_conf[3] = new_conf;
 
-	if(pi->force_hpd) {
+	if (pi->force_hpd) {
 		write_conf[4] = 0x06;
 	} else {
 		write_conf[4] = 0;
 	}
-
-	ret = i2c_master_send(pi->client, write_conf, 5);
+	if (redriver_switch)
+		ret = i2c_master_send(pi->client, write_conf, 5);
 
 	if (ret < 0) {
 		dev_err(&pi->client->dev, "Error writing conf: %d\n", ret);
@@ -111,8 +120,8 @@ static int pi3dpx1207c_sw_set(struct typec_switch_dev *sw,
 	return ret;
 }
 
-static int
-pi3dpx1207c_mux_set(struct typec_mux_dev *mux, struct typec_mux_state *state)
+static int pi3dpx1207c_mux_set(struct typec_mux_dev *mux,
+			       struct typec_mux_state *state)
 {
 	struct pi3dpx1207c *pi = typec_mux_get_drvdata(mux);
 	u8 new_conf;
@@ -147,10 +156,12 @@ pi3dpx1207c_mux_set(struct typec_mux_dev *mux, struct typec_mux_state *state)
 			switch (state->mode) {
 			case TYPEC_DP_STATE_C:
 			case TYPEC_DP_STATE_E:
-				new_conf = PI3DPX1207C_CONF_4LANE_DP_FLIP_AUX_NOT_FLIP;
+				new_conf =
+					PI3DPX1207C_CONF_4LANE_DP_FLIP_AUX_NOT_FLIP;
 				break;
 			case TYPEC_DP_STATE_D:
-				new_conf = PI3DPX1207C_CONF_USB3_AND_2LANE_DP_FILP_AUX_NOT_FILP;
+				new_conf =
+					PI3DPX1207C_CONF_USB3_AND_2LANE_DP_FILP_AUX_NOT_FILP;
 				break;
 			default:
 				break;
@@ -163,27 +174,33 @@ pi3dpx1207c_mux_set(struct typec_mux_dev *mux, struct typec_mux_state *state)
 	return ret;
 }
 
-static ssize_t get_conf(struct device *dev, struct device_attribute *attr, char *buf)
+static ssize_t get_conf(struct device *dev, struct device_attribute *attr,
+			char *buf)
 {
 	struct pi3dpx1207c *pi = (struct pi3dpx1207c *)dev_get_drvdata(dev);
-	u8 read_conf[17] = {0};
+	u8 read_conf[17] = { 0 };
 	int ret;
 
-	ret = i2c_smbus_read_i2c_block_data(pi->client, PI3DPX1207C_CONF, 17, read_conf);
+	ret = i2c_smbus_read_i2c_block_data(pi->client, PI3DPX1207C_CONF, 17,
+					    read_conf);
 	if (ret < 0) {
 		dev_err(dev, "Error reading config register %d\n", ret);
 		return ret;
 	} else {
-		dev_err(&pi->client->dev, "read_conf = %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x", read_conf[0], read_conf[1], read_conf[2], read_conf[3],
-		read_conf[4], read_conf[5], read_conf[6], read_conf[7],
-		read_conf[8], read_conf[9], read_conf[10], read_conf[11],
-		read_conf[12], read_conf[13], read_conf[14], read_conf[15],read_conf[16]);
+		dev_err(&pi->client->dev,
+			"read_conf = %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x",
+			read_conf[0], read_conf[1], read_conf[2], read_conf[3],
+			read_conf[4], read_conf[5], read_conf[6], read_conf[7],
+			read_conf[8], read_conf[9], read_conf[10],
+			read_conf[11], read_conf[12], read_conf[13],
+			read_conf[14], read_conf[15], read_conf[16]);
 	}
 
 	return sprintf(buf, "%x\n", pi->conf);
 }
 
-static ssize_t set_conf(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+static ssize_t set_conf(struct device *dev, struct device_attribute *attr,
+			const char *buf, size_t count)
 {
 	struct pi3dpx1207c *pi = (struct pi3dpx1207c *)dev_get_drvdata(dev);
 	u8 value = PI3DPX1207C_CONF_OPEN;
@@ -222,12 +239,12 @@ static const struct attribute_group pi3dpx1207_group = {
 static int pi3dpx1207c_probe(struct i2c_client *client)
 {
 	struct device *dev = &client->dev;
-	struct typec_switch_desc sw_desc = { };
-	struct typec_mux_desc mux_desc = { };
+	struct typec_switch_desc sw_desc = {};
+	struct typec_mux_desc mux_desc = {};
 	struct pi3dpx1207c *pi;
 	int ret;
 	u8 default_conf = 0;
-	u8 read_conf[4] = {0};
+	u8 read_conf[4] = { 0 };
 	
 	pi = devm_kzalloc(dev, sizeof(*pi), GFP_KERNEL);
 	if (!pi)
@@ -259,12 +276,15 @@ static int pi3dpx1207c_probe(struct i2c_client *client)
 		pi->force_hpd = 0;
 	}
 #endif
-	if (!fwnode_property_read_u8(dev->fwnode, "default_conf", &default_conf)) {
-		dev_info(dev, "init default conf %02x, %02x\n", default_conf, pi->conf);
+	if (!fwnode_property_read_u8(dev->fwnode, "default_conf",
+								 &default_conf)) {
+		dev_info(dev, "init default conf %02x, %02x\n", default_conf,
+				 pi->conf);
 		pi3dpx1207c_set_conf(pi, default_conf);
 	}
 
-	if (!fwnode_property_read_u8(dev->fwnode, "need_aux_flip", &pi->need_aux_flip)) {
+	if (!fwnode_property_read_u8(dev->fwnode, "need_aux_flip",
+								 &pi->need_aux_flip)) {
 		dev_info(dev, "need flip %02x \n", pi->need_aux_flip);
 	}
 
@@ -274,12 +294,14 @@ static int pi3dpx1207c_probe(struct i2c_client *client)
 		dev_err(dev, "sysfs_create_group ret = %d\n", ret);
 	}
 
-	ret = i2c_smbus_read_i2c_block_data(client, PI3DPX1207C_CONF, 4, read_conf);
+	ret = i2c_smbus_read_i2c_block_data(client, PI3DPX1207C_CONF, 4,
+					    read_conf);
 	if (ret < 0) {
 		dev_err(dev, "Error reading config register %d\n", ret);
 		return ret;
 	} else {
-		printk("read_conf = %hhu %hhu %hhu %hhu", read_conf[0], read_conf[1], read_conf[2], read_conf[3]);
+		printk("read_conf = %hhu %hhu %hhu %hhu", read_conf[0],
+		       read_conf[1], read_conf[2], read_conf[3]);
 	}
 
 	pi->conf = read_conf[3];
@@ -308,7 +330,7 @@ static int pi3dpx1207c_probe(struct i2c_client *client)
 	}
 
 	i2c_set_clientdata(client, pi);
-	 dev_err(dev,"%s  success\n",__func__);
+	dev_err(dev, "%s  success\n", __func__);
 	return 0;
 }
 
@@ -320,25 +342,21 @@ static void pi3dpx1207c_remove(struct i2c_client *client)
 	typec_switch_unregister(pi->sw);
 }
 
-static const struct i2c_device_id pi3dpx1207c_table[] = {
-	{ "pi3dpx1207c" },
-	{ }
-};
+static const struct i2c_device_id pi3dpx1207c_table[] = { { "pi3dpx1207c" },
+														 {} };
 MODULE_DEVICE_TABLE(i2c, pi3dpx1207c_table);
 
 #if IS_ENABLED(CONFIG_OF)
 static const struct of_device_id pi3dpx1207c_dt_ids[] = {
-    { .compatible = "pericom,pi3dpx1207c",  .data = NULL },
-	{ /* sentinel */ }
+    	{ .compatible = "pericom,pi3dpx1207c",  .data = NULL },
+		{ /* sentinel */ }
 };
 
 MODULE_DEVICE_TABLE(of, pi3dpx1207c_dt_ids);
 #endif
 
-static const struct acpi_device_id pi3dpx1207c_acpi_ids[] = {
-	{"CIXH200E", 0},
-	{ }
-};
+static const struct acpi_device_id pi3dpx1207c_acpi_ids[] = { {"CIXH200E", 0},
+														 {} };
 MODULE_DEVICE_TABLE(acpi, pi3dpx1207c_acpi_ids);
 
 static struct i2c_driver pi3dpx1207c_driver = {
