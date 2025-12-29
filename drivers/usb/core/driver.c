@@ -2077,8 +2077,35 @@ int usb_disable_usb2_hardware_lpm(struct usb_device *udev)
 
 #endif /* CONFIG_PM */
 
+static const struct usb_device_id excluded_devices[] = {
+	{ USB_DEVICE(0x2109, 0x0716) }, // Via Lab inc USSD
+	{ USB_DEVICE(0x24ae, 0x1013) }, // Rapoo
+	{ USB_DEVICE(0x320f, 0x7063) }, // Rapoo
+	{} /* Terminating entry */
+};
+
+static bool is_device_excluded(struct device *dev)
+{
+	const struct usb_device_id *id;
+	struct usb_device *udev = to_usb_device(dev);
+	for (id = excluded_devices; id->match_flags; id++) {
+		if ((id->match_flags & USB_DEVICE_ID_MATCH_VENDOR) &&
+			id->idVendor == udev->descriptor.idVendor &&
+			(id->match_flags & USB_DEVICE_ID_MATCH_PRODUCT) &&
+			id->idProduct == udev->descriptor.idProduct) {
+				return true;
+		}
+	}
+	return false;
+};
+
 static void usb_device_shutdown(struct device *dev)
 {
+	if (is_device_excluded(dev)) {
+		dev_err(dev, "Skipping suspend for excluded device\n");
+		return;
+	}
+
 	/* Put all connected USB device in suspend for later D3 operation */
 	if (dev->type == &usb_device_type)
 		usb_suspend(dev, PMSG_HIBERNATE);
