@@ -47,6 +47,7 @@ struct pi3dpx1207c {
 	u8 conf;
 	unsigned int en_pin;
 	u8 force_hpd;
+	u8 save_data[5];
 };
 
 static int redriver_switch = 0;
@@ -342,6 +343,36 @@ static void pi3dpx1207c_remove(struct i2c_client *client)
 	typec_switch_unregister(pi->sw);
 }
 
+static int pi3dpx1207c_suspend_dev(struct device *dev)
+{
+	int ret = 0;
+	struct pi3dpx1207c *pi = (struct pi3dpx1207c *)dev_get_drvdata(dev);
+	ret = i2c_master_recv(pi->client, pi->save_data, 5);
+	if (ret < 0) {
+		dev_err(&pi->client->dev, "Error read conf: %d\n", ret);
+		return ret;
+	}
+	return 0;
+}
+
+static int pi3dpx1207c_resume_dev(struct device *dev)
+{
+	int ret = 0;
+	struct pi3dpx1207c *pi = (struct pi3dpx1207c *)dev_get_drvdata(dev);
+	ret = i2c_master_send(pi->client, pi->save_data, 5);
+	if (ret < 0) {
+		dev_err(&pi->client->dev, "Error writing conf: %d\n", ret);
+		return ret;
+	}
+
+	return 0;
+}
+
+static const struct dev_pm_ops pi3dpx1207c_pmops = {
+	.suspend = pi3dpx1207c_suspend_dev,
+	.resume = pi3dpx1207c_resume_dev
+};
+
 static const struct i2c_device_id pi3dpx1207c_table[] = { { "pi3dpx1207c" },
 														 {} };
 MODULE_DEVICE_TABLE(i2c, pi3dpx1207c_table);
@@ -366,6 +397,7 @@ static struct i2c_driver pi3dpx1207c_driver = {
 		.of_match_table = pi3dpx1207c_dt_ids,
 #endif
 		.acpi_match_table = ACPI_PTR(pi3dpx1207c_acpi_ids),
+		.pm = &pi3dpx1207c_pmops,
 	},
 	.probe	= pi3dpx1207c_probe,
 	.remove		= pi3dpx1207c_remove,
