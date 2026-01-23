@@ -2054,7 +2054,7 @@ static int trilin_dp_core_on(struct trilin_dp *dp, bool shallow)
 	if (!fast_train_success) {
 		/* update sink caps, before do linktraining */
 		trinlin_dp_panel_read_sink_caps(dp);
- 		rc = trilin_dp_train_loop(dp);
+		rc = trilin_dp_train_loop(dp);
 	}
 
 	/*dptx source enable*/
@@ -2122,7 +2122,7 @@ static int trilin_dp_core_off(struct trilin_dp *dp)
 			0, sizeof(struct trilin_dp_mst_ch_slot_info) * dp->max_streams);
 
 	dp->state &= ~DP_STATE_READY;
-	dp->state &= ~DP_STATE_INIT_TRAIN;
+
 	return rc;
 }
 
@@ -2651,7 +2651,7 @@ static void trilin_dp_hpd_event_work_func(struct work_struct *work)
 
 	if(old_status == dp->status) {
 		DP_INFO("dp status is same : %d", dp->status);
- 		return;
+		return;
 	}
 	connected = (dp->status == connector_status_connected);
 
@@ -2812,6 +2812,7 @@ int trilin_dp_pm_prepare(struct trilin_dp *dp)
 		trilin_dp_host_deinit(dp);
 	}
 	dp->status = connector_status_unknown;
+	dp->state &= ~DP_STATE_CONNECTED;
 	mutex_unlock(&dp->session_lock);
 	return 0;
 }
@@ -2941,7 +2942,6 @@ int trilin_dp_prepare(struct trilin_dp *dp)
 		}
 	} else if (dp->state & DP_STATE_INIT_TRAIN){
 		reset_dp_and_reinit(dp); //enable dp reset...
-		usleep_range(100, 200);
 	}
 
 	if (!trilin_dp_is_ready(dp)) {
@@ -2965,8 +2965,8 @@ int trilin_dp_enable(struct trilin_dp *dp, struct trilin_dp_panel *dp_panel)
 	 * If DP_STATE_INITIALIZED is not set, we should not do any HW
 	 * programming.
 	 */
-	if (!(dp->state & DP_STATE_INITIALIZED) || !(dp->state & DP_STATE_READY)) {
-		DP_WARN("[host not ready]");
+	if (!(dp->state & DP_STATE_INITIALIZED)) {
+		DP_ERR("[host not ready]");
 		goto end;
 	}
 
