@@ -114,7 +114,7 @@ static ssize_t
 i3cdev_read(struct file *file, char __user *buf, size_t count, loff_t *f_pos)
 {
 	struct i3c_device *i3c = file->private_data;
-	struct i3c_priv_xfer xfers = {
+	struct i3c_xfer xfers = {
 		.rnw = true,
 		.len = count,
 	};
@@ -129,7 +129,7 @@ i3cdev_read(struct file *file, char __user *buf, size_t count, loff_t *f_pos)
 
 	dev_info(&i3c->dev, "Reading %zu bytes.\n", count);
 
-	ret = i3c_device_do_priv_xfers(i3c, &xfers, 1);
+	ret = i3c_device_do_xfers(i3c, &xfers, 1, I3C_SDR);
 	if (!ret)
 		ret = copy_to_user(buf, tmp, count) ? -EFAULT : ret;
 
@@ -142,7 +142,7 @@ i3cdev_write(struct file *file, const char __user *buf, size_t count,
 	     loff_t *f_pos)
 {
 	struct i3c_device *i3c = file->private_data;
-	struct i3c_priv_xfer xfers = {
+	struct i3c_xfer xfers = {
 		.rnw = false,
 		.len = count,
 	};
@@ -157,13 +157,13 @@ i3cdev_write(struct file *file, const char __user *buf, size_t count,
 
 	dev_info(&i3c->dev, "Writing %zu bytes.\n", count);
 
-	ret = i3c_device_do_priv_xfers(i3c, &xfers, 1);
+	ret = i3c_device_do_xfers(i3c, &xfers, 1, I3C_SDR);
 	kfree(tmp);
 	return (!ret) ? count : ret;
 }
 
 static int
-i3cdev_do_priv_xfer_wrap(struct i3c_device *dev, struct i3c_priv_xfer *xfers,
+i3cdev_do_priv_xfer_wrap(struct i3c_device *dev, struct i3c_xfer *xfers,
 		    unsigned int nxfers)
 {
 	void __user **data_ptrs;
@@ -206,7 +206,7 @@ i3cdev_do_priv_xfer_wrap(struct i3c_device *dev, struct i3c_priv_xfer *xfers,
 		return ret;
 	}
 
-	ret = i3c_device_do_priv_xfers(dev, xfers, nxfers);
+	ret = i3c_device_do_xfers(dev, xfers, nxfers, I3C_SDR);
 	while (i-- > 0) {
 		if (ret >= 0 && xfers[i].rnw) {
 			if (copy_to_user(data_ptrs[i], xfers[i].data.in,
@@ -229,14 +229,14 @@ i3cdev_transfer_priv_xfer(struct i3c_device *i3c,
 		     struct i3c_ioc_priv_xfer __user *u_ioc_xfers)
 {
 	struct i3c_ioc_priv_xfer k_ioc_xfer;
-	struct i3c_priv_xfer *xfers;
+	struct i3c_xfer *xfers;
 	int ret;
 
 	if (copy_from_user(&k_ioc_xfer, u_ioc_xfers, sizeof(k_ioc_xfer)))
 		return -EFAULT;
 
 	xfers = memdup_user(k_ioc_xfer.xfers,
-			    k_ioc_xfer.nxfers * sizeof(struct i3c_priv_xfer));
+			    k_ioc_xfer.nxfers * sizeof(struct i3c_xfer));
 	if (IS_ERR(xfers))
 		return PTR_ERR(xfers);
 
@@ -404,7 +404,7 @@ static int __init i3cdev_init(void)
 		goto out_unreg_class;
 
 	/* Bind to already existing device without driver right away */
-	i3c_for_each_dev(NULL, i3cdev_attach);
+	/* 7.3: no i3c_for_each_dev(); the bus notifier above handles devices */
 
 	return 0;
 out_unreg_class:
@@ -419,7 +419,7 @@ out:
 static void __exit i3cdev_exit(void)
 {
 	bus_unregister_notifier(&i3c_bus_type, &i3c_notifier);
-	i3c_for_each_dev(NULL, i3cdev_detach);
+	/* 7.3: i3c_for_each_dev removed */
 	class_destroy(i3cdev_class);
 	unregister_chrdev_region(i3cdev_number, I3C_MINORS);
 }

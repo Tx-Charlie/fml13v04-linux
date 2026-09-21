@@ -21,6 +21,7 @@
 #include <linux/pm_runtime.h>
 
 #include "core.h"
+#include "host-export.h"
 #include "drd.h"
 
 static int cdns_idle_init(struct cdns *cdns);
@@ -70,8 +71,7 @@ static void cdns_role_stop(struct cdns *cdns)
 static void cdns_exit_roles(struct cdns *cdns)
 {
 	cdns_role_stop(cdns);
-	if (!cdns->no_drd)
-		cdns_drd_exit(cdns);
+	cdns_drd_exit(cdns);
 }
 
 static int cdnsp_platform_reset(struct device *dev)
@@ -150,7 +150,7 @@ pm_out:
  *
  * Returns 0 on success otherwise negative errno
  */
-int cdns_core_init_role(struct cdns *cdns)
+static int cdns_core_init_role(struct cdns *cdns)
 {
 	struct device *dev = cdns->dev;
 	enum usb_dr_mode best_dr_mode;
@@ -166,13 +166,23 @@ int cdns_core_init_role(struct cdns *cdns)
 	 * can be restricted later depending on strap pin configuration.
 	 */
 	if (dr_mode == USB_DR_MODE_UNKNOWN) {
-		if (IS_ENABLED(CONFIG_USB_CDNS3_HOST) &&
-		    IS_ENABLED(CONFIG_USB_CDNS3_GADGET))
-			dr_mode = USB_DR_MODE_OTG;
-		else if (IS_ENABLED(CONFIG_USB_CDNS3_HOST))
-			dr_mode = USB_DR_MODE_HOST;
-		else if (IS_ENABLED(CONFIG_USB_CDNS3_GADGET))
-			dr_mode = USB_DR_MODE_PERIPHERAL;
+		if (cdns->version == CDNSP_CONTROLLER_V2) {
+			if (IS_ENABLED(CONFIG_USB_CDNSP_HOST) &&
+			    IS_ENABLED(CONFIG_USB_CDNSP_GADGET))
+				dr_mode = USB_DR_MODE_OTG;
+			else if (IS_ENABLED(CONFIG_USB_CDNSP_HOST))
+				dr_mode = USB_DR_MODE_HOST;
+			else if (IS_ENABLED(CONFIG_USB_CDNSP_GADGET))
+				dr_mode = USB_DR_MODE_PERIPHERAL;
+		} else {
+			if (IS_ENABLED(CONFIG_USB_CDNS3_HOST) &&
+			    IS_ENABLED(CONFIG_USB_CDNS3_GADGET))
+				dr_mode = USB_DR_MODE_OTG;
+			else if (IS_ENABLED(CONFIG_USB_CDNS3_HOST))
+				dr_mode = USB_DR_MODE_HOST;
+			else if (IS_ENABLED(CONFIG_USB_CDNS3_GADGET))
+				dr_mode = USB_DR_MODE_PERIPHERAL;
+		}
 	}
 
 	/*
@@ -197,8 +207,11 @@ int cdns_core_init_role(struct cdns *cdns)
 	dr_mode = best_dr_mode;
 
 	if (dr_mode == USB_DR_MODE_OTG || dr_mode == USB_DR_MODE_HOST) {
-		if (cdns->host_init)
-			ret = cdns->host_init(cdns);
+		if ((cdns->version == CDNSP_CONTROLLER_V2 &&
+		     IS_ENABLED(CONFIG_USB_CDNSP_HOST)) ||
+		    (cdns->version < CDNSP_CONTROLLER_V2 &&
+		     IS_ENABLED(CONFIG_USB_CDNS3_HOST)))
+			ret = cdns_host_init(cdns);
 		else
 			ret = -ENXIO;
 
@@ -255,14 +268,11 @@ int cdns_core_init_role(struct cdns *cdns)
 		goto err;
 	}
 
-	dev_dbg(dev, "Cadence USB3 core: probe succeed\n");
-
 	return 0;
 err:
 	cdns_exit_roles(cdns);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(cdns_core_init_role);
 
 /**
  * cdns_hw_role_state_machine  - role switch state machine based on hw events.
@@ -551,7 +561,13 @@ int cdns_init(struct cdns *cdns)
 	if (ret)
 		goto init_failed;
 
+	ret = cdns_core_init_role(cdns);
+	if (ret)
+		goto init_failed;
+
 	spin_lock_init(&cdns->lock);
+
+	dev_dbg(dev, "Cadence USB3 core: probe succeed\n");
 
 	return 0;
 init_failed:
@@ -600,13 +616,14 @@ EXPORT_SYMBOL_GPL(cdns_suspend);
 
 int cdns_resume(struct cdns *cdns)
 {
-	bool power_lost = cdns_power_is_lost(cdns);
 	enum usb_role real_role;
 	bool role_changed = false;
 	int ret = 0;
 
-	if (power_lost) {
-		if (!cdns->role_sw) {
+	if (cdns_power_is_lost(cdns)) {
+		if (cdns->role_sw) {
+			cdns->role = cdns_role_get(cdns->role_sw);
+		} else {
 			real_role = cdns_hw_role_state_machine(cdns);
 			if (real_role != cdns->role) {
 				ret = cdns_hw_role_switch(cdns);
@@ -627,8 +644,8 @@ int cdns_resume(struct cdns *cdns)
 		}
 	}
 
-	if (!role_changed && cdns->roles[cdns->role]->resume)
-		cdns->roles[cdns->role]->resume(cdns, power_lost);
+	if (cdns->roles[cdns->role]->resume)
+		cdns->roles[cdns->role]->resume(cdns, cdns_power_is_lost(cdns));
 
 	return 0;
 }
@@ -652,5 +669,5 @@ EXPORT_SYMBOL_GPL(cdns_set_active);
 MODULE_AUTHOR("Peter Chen <peter.chen@nxp.com>");
 MODULE_AUTHOR("Pawel Laszczak <pawell@cadence.com>");
 MODULE_AUTHOR("Roger Quadros <rogerq@ti.com>");
-MODULE_DESCRIPTION("Cadence USBSS/USBSSP DRD driver (core, DRD, platform, optional host/gadget)");
+MODULE_DESCRIPTION("Cadence USBSS and USBSSP DRD Driver");
 MODULE_LICENSE("GPL");
