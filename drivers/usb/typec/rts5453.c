@@ -493,7 +493,7 @@ static ssize_t disable_pd_interrupt_store(struct device *dev,
 	bool value;
 	int ret;
 
-	ret = strtobool(buf, &value);
+	ret = kstrtobool(buf, &value);
 	if (!ret) {
 		rts->pd_int_disabled = value;
 

@@ -839,6 +839,7 @@ static int lt7911uxc_set_fmt(struct v4l2_subdev *sd,
 }
 
 static int lt7911uxc_g_frame_interval(struct v4l2_subdev *sd,
+				      struct v4l2_subdev_state *sd_state,
 				      struct v4l2_subdev_frame_interval *fi)
 {
 	struct lt7911uxc *lt7911uxc = to_lt7911uxc(sd);
@@ -852,6 +853,7 @@ static int lt7911uxc_g_frame_interval(struct v4l2_subdev *sd,
 }
 
 static int lt7911uxc_s_frame_interval(struct v4l2_subdev *sd,
+				      struct v4l2_subdev_state *sd_state,
 				      struct v4l2_subdev_frame_interval *fi)
 {
 	return 0;
@@ -885,14 +887,14 @@ static const struct v4l2_subdev_core_ops lt7911uxc_core_ops = {
 static const struct v4l2_subdev_video_ops lt7911uxc_video_ops = {
 	.g_input_status = lt7911uxc_g_input_status,
 	.s_stream = lt7911uxc_s_stream,
-	.g_frame_interval = lt7911uxc_g_frame_interval,
-	.s_frame_interval = lt7911uxc_s_frame_interval,
 };
 
 static const struct v4l2_subdev_pad_ops lt7911uxc_pad_ops = {
 	.enum_mbus_code = lt7911uxc_enum_mbus_code,
 	.enum_frame_size = lt7911uxc_enum_frame_sizes,
 	.enum_frame_interval = lt7911uxc_enum_frame_interval,
+	.get_frame_interval = lt7911uxc_g_frame_interval,
+	.set_frame_interval = lt7911uxc_s_frame_interval,
 	.set_fmt = lt7911uxc_set_fmt,
 	.get_fmt = lt7911uxc_get_fmt,
 	.get_mbus_config = lt7911uxc_g_mbus_config,
@@ -1159,7 +1161,7 @@ static int lt7911uxc_audio_hw_params(struct device *dev, void *data,
 }
 
 static int lt7911uxc_audio_get_dai_id(struct snd_soc_component *comment,
-				      struct device_node *endpoint)
+				      struct device_node *endpoint, void *data)
 {
 	return 0;
 }
