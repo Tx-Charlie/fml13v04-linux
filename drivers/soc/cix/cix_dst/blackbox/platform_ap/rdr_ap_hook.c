@@ -189,7 +189,7 @@ void __task_switch_hook(const void *pre_task, void *next_task)
 	info.clock = local_clock();
 	cpu = (u8)smp_processor_id();
 	info.pid = (u32)task->pid;
-	(void)strncpy(info.comm, task->comm, sizeof(task->comm) - 1);
+	(void)strscpy(info.comm, task->comm, sizeof(task->comm) - 1);
 	info.comm[TASK_COMM_LEN - 1] = '\0';
 	info.stack = (uintptr_t)task->stack;
 
@@ -272,7 +272,7 @@ void __hung_task_hook(void *tsk, u32 timeout)
 	info.clock = local_clock();
 	info.timeout = (u32)timeout;
 	info.pid = (u32)task->pid;
-	(void)strncpy(info.comm, task->comm, sizeof(task->comm) - 1);
+	(void)strscpy(info.comm, task->comm, sizeof(task->comm) - 1);
 	info.comm[TASK_COMM_LEN - 1] = '\0';
 
 	rdr_rbuf_write(g_hook_buffer[HK_HUNGTASK].percpu[0].vaddr, (u8 *)&info);
