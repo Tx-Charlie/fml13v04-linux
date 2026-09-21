@@ -32,6 +32,24 @@ static struct reserved_mem *reserved_mem __refdata = reserved_mem_array;
 static int total_reserved_mem_cnt = MAX_RESERVED_REGIONS;
 static int reserved_mem_count;
 
+void __init fdt_reserved_mem_save_node(unsigned long node, const char *uname,
+				      phys_addr_t base, phys_addr_t size)
+{
+	struct reserved_mem *rmem = &reserved_mem[reserved_mem_count];
+
+	if (reserved_mem_count == total_reserved_mem_cnt) {
+		pr_err("not enough space for all defined regions.\n");
+		return;
+	}
+
+	rmem->fdt_node = node;
+	rmem->name = uname;
+	rmem->base = base;
+	rmem->size = size;
+
+	reserved_mem_count++;
+}
+
 static int __init early_init_dt_alloc_reserved_memory_arch(phys_addr_t size,
 	phys_addr_t align, phys_addr_t start, phys_addr_t end, bool nomap,
 	phys_addr_t *res_base)
