@@ -17,6 +17,7 @@
  * GNU General Public License for more details.
  *
  */
+#include <linux/string.h>
 #include <linux/soc/cix/hw_boottime.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
@@ -122,7 +123,7 @@ void boot_record(const char *str)
 	hw_boottime[boot_log_count].time_us = sky1_get_time_us();
 	memset(&hw_boottime[boot_log_count].event, 0,
 	       sizeof(hw_boottime[boot_log_count].event));
-	strncpy((char *)&hw_boottime[boot_log_count].event, str, strlen(str));
+	strscpy((char *)&hw_boottime[boot_log_count].event, str, strlen(str));
 
 	boot_log_count++;
 	mutex_unlock(&hw_boottime_lock);

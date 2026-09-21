@@ -18,42 +18,42 @@
 #include <linux/version.h>
 #include "acpi_clk.h"
 
-#define GET_CLOCK_RATE		0x00000001
-#define SET_CLOCK_RATE		0X00000002
-#define SET_CLOCK_CONFIG	0X00000003
+#define GET_CLOCK_RATE 0x00000001
+#define SET_CLOCK_RATE 0X00000002
+#define SET_CLOCK_CONFIG 0X00000003
 
-#define CLOCK_REVISION_ID	1
-#define CLOCK_ENABLE		BIT(0)
-#define CLOCK_DISABLE		0
-#define CLK_MASK		(0xffffffff)
-#define SUCCESS		0
+#define CLOCK_REVISION_ID 1
+#define CLOCK_ENABLE BIT(0)
+#define CLOCK_DISABLE 0
+#define CLK_MASK (0xffffffff)
+#define SUCCESS 0
 
 static LIST_HEAD(aclk_list);
 static LIST_HEAD(aclk_hw_list);
 
 static struct acpi_device *acpi_obj_path_to_adev(union acpi_object *obj)
 {
-        struct acpi_device *adev = NULL;
-        char *path;
-        acpi_handle handle;
-        acpi_status status;
+	struct acpi_device *adev = NULL;
+	char *path;
+	acpi_handle handle;
+	acpi_status status;
 
-        if (!obj || !obj->string.length)
-                return NULL;
+	if (!obj || !obj->string.length)
+		return NULL;
 
-        path = obj->string.pointer;
-        status = acpi_get_handle(NULL, path, &handle);
-        if (ACPI_FAILURE(status)) {
-                return NULL;
-        }
+	path = obj->string.pointer;
+	status = acpi_get_handle(NULL, path, &handle);
+	if (ACPI_FAILURE(status)) {
+		return NULL;
+	}
 
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 0, 0)
-        adev = acpi_bus_get_acpi_device(handle);
+	adev = acpi_bus_get_acpi_device(handle);
 #else
-        adev = acpi_fetch_acpi_dev(handle);
+	adev = acpi_fetch_acpi_dev(handle);
 #endif
 
-        return adev;
+	return adev;
 }
 
 static struct acpi_device *acpi_obj_to_adev(union acpi_object *obj)
@@ -78,8 +78,12 @@ static int acpi_clock_config_set(struct device *dev, u32 clk_id, u32 config)
 	union acpi_object *package;
 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
 	union acpi_object args[2] = {
-		{ .type = ACPI_TYPE_INTEGER, },
-		{ .type = ACPI_TYPE_INTEGER, },
+		{
+			.type = ACPI_TYPE_INTEGER,
+		},
+		{
+			.type = ACPI_TYPE_INTEGER,
+		},
 	};
 
 	struct acpi_object_list arg_list = {
@@ -106,8 +110,8 @@ static int acpi_clock_config_set(struct device *dev, u32 clk_id, u32 config)
 
 	buf_val[0] = *(u32 *)package->buffer.pointer;
 	if (buf_val[0] != SUCCESS) {
-		dev_err(dev, "ACPI clk[%u] set config[%u] err:%d\n",
-					clk_id, config, buf_val[0]);
+		dev_err(dev, "ACPI clk[%u] set config[%u] err:%d\n", clk_id,
+			config, buf_val[0]);
 		ret = -ENODEV;
 		goto OUT;
 	}
@@ -140,18 +144,20 @@ static void acpi_clk_unprepare(struct clk_hw *hw)
 }
 
 static unsigned long acpi_cix_clk_recalc_rate(struct clk_hw *hw,
-					     unsigned long parent_rate)
+					      unsigned long parent_rate)
 {
 	struct acpi_clk_hw *aclk_hw = to_acpi_clk_hw(hw);
 	struct device *dev = aclk_hw->dev;
 	acpi_handle handle = ACPI_HANDLE(dev);
 	acpi_status status;
 	unsigned long clk_rate;
-	u32 buf_val[3] = {0};
+	u32 buf_val[3] = { 0 };
 	int ret = 0;
 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
 	union acpi_object args[] = {
-		{ .type = ACPI_TYPE_INTEGER, },
+		{
+			.type = ACPI_TYPE_INTEGER,
+		},
 	};
 	struct acpi_object_list arg_list = {
 		.pointer = args,
@@ -178,14 +184,14 @@ static unsigned long acpi_cix_clk_recalc_rate(struct clk_hw *hw,
 	buf_val[1] = ((u32 *)package->buffer.pointer)[1];
 	buf_val[2] = ((u32 *)package->buffer.pointer)[2];
 	if (buf_val[0] != SUCCESS) {
-		dev_err(dev, "ACPI clk[%u] rec rate err:%d\n",
-					aclk_hw->clk_id, buf_val[0]);
+		dev_err(dev, "ACPI clk[%u] rec rate err:%d\n", aclk_hw->clk_id,
+			buf_val[0]);
 		ret = buf_val[0];
 		goto OUT;
 	}
 
-	clk_rate = ((u64)(buf_val[2] & CLK_MASK) << 32)
-			| (u64)(buf_val[1] & CLK_MASK);
+	clk_rate = ((u64)(buf_val[2] & CLK_MASK) << 32) |
+		   (u64)(buf_val[1] & CLK_MASK);
 
 OUT:
 	if (buffer.pointer)
@@ -195,7 +201,7 @@ OUT:
 }
 
 static int acpi_cix_clk_set_rate(struct clk_hw *hw, unsigned long rate,
-				unsigned long parent_rate)
+				 unsigned long parent_rate)
 {
 	struct acpi_clk_hw *aclk_hw = to_acpi_clk_hw(hw);
 	struct device *dev = aclk_hw->dev;
@@ -206,9 +212,15 @@ static int acpi_cix_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 	union acpi_object *package;
 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
 	union acpi_object args[3] = {
-		{ .type = ACPI_TYPE_INTEGER, },
-		{ .type = ACPI_TYPE_INTEGER, },
-		{ .type = ACPI_TYPE_INTEGER, },
+		{
+			.type = ACPI_TYPE_INTEGER,
+		},
+		{
+			.type = ACPI_TYPE_INTEGER,
+		},
+		{
+			.type = ACPI_TYPE_INTEGER,
+		},
 	};
 
 	struct acpi_object_list arg_list = {
@@ -236,8 +248,8 @@ static int acpi_cix_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 
 	buf_val[0] = *(u32 *)package->buffer.pointer;
 	if (buf_val[0] != SUCCESS) {
-		dev_err(dev, "ACPI clk[%u] set rate err:%d\n",
-					aclk_hw->clk_id, buf_val[0]);
+		dev_err(dev, "ACPI clk[%u] set rate err:%d\n", aclk_hw->clk_id,
+			buf_val[0]);
 		goto OUT;
 	}
 
@@ -248,18 +260,18 @@ OUT:
 	return ret;
 }
 
-static long cix_acpi_clk_round_rate(struct clk_hw *hw, unsigned long rate,
-				    unsigned long *prate)
+static int cix_acpi_clk_determine_rate(struct clk_hw *hw,
+				       struct clk_rate_request *req)
 {
 	/* do not support now */
-	return rate;
+	return 0;
 }
 
 static const struct clk_ops acpi_clk_ops = {
 	.prepare = acpi_clk_prepare,
 	.unprepare = acpi_clk_unprepare,
 	.recalc_rate = acpi_cix_clk_recalc_rate,
-	.round_rate = cix_acpi_clk_round_rate,
+	.determine_rate = cix_acpi_clk_determine_rate,
 	.set_rate = acpi_cix_clk_set_rate,
 };
 
@@ -284,7 +296,7 @@ static struct clk_hw *acpi_clk_get_hw(unsigned int clk_id)
 }
 
 static struct clk_hw *devm_acpi_clk_hw_alloc(struct device *dev,
-			unsigned int clk_id)
+					     unsigned int clk_id)
 {
 	struct acpi_clk_hw *aclk_hw = NULL;
 
@@ -335,14 +347,14 @@ out:
 }
 
 int cix_acpi_parse_clkt_handle(acpi_handle handle, const char *name,
-			struct clk_hw *(get_hw)(struct device *, int),
-			void *data)
+			       struct clk_hw *(get_hw)(struct device *, int),
+			       void *data)
 {
 	struct device *dev = data;
-	struct acpi_buffer output = {ACPI_ALLOCATE_BUFFER, NULL};
+	struct acpi_buffer output = { ACPI_ALLOCATE_BUFFER, NULL };
 	union acpi_object *out_obj, *clk_obj, *el[ACLK_MAX];
 	acpi_status status;
-	int clk_num, pnum, i, ret=0;
+	int clk_num, pnum, i, ret = 0;
 	struct acpi_device *adev;
 	struct acpi_clk *acpi_clks;
 	struct clk_hw *hw;
@@ -353,16 +365,17 @@ int cix_acpi_parse_clkt_handle(acpi_handle handle, const char *name,
 		return -EINVAL;
 
 	/* Parse the ACPI CLKT table for this CPU. */
-	status = acpi_evaluate_object_typed(handle,
-			(acpi_string)name, NULL, &output, ACPI_TYPE_PACKAGE);
+	status = acpi_evaluate_object_typed(handle, (acpi_string)name, NULL,
+					    &output, ACPI_TYPE_PACKAGE);
 	if (ACPI_FAILURE(status)) {
 		ret = -ENODEV;
 		goto out_free;
 	}
 
-	out_obj = (union acpi_object *) output.pointer;
+	out_obj = (union acpi_object *)output.pointer;
 	clk_num = out_obj->package.count;
-	acpi_clks = devm_kcalloc(dev, clk_num, sizeof(struct acpi_clk), GFP_KERNEL);
+	acpi_clks =
+		devm_kcalloc(dev, clk_num, sizeof(struct acpi_clk), GFP_KERNEL);
 	if (!acpi_clks) {
 		ret = -ENOMEM;
 		goto out_free;
@@ -380,15 +393,15 @@ int cix_acpi_parse_clkt_handle(acpi_handle handle, const char *name,
 		el[1] = &clk_obj->package.elements[1];
 		el[2] = pnum > ACLK_DEV ? &clk_obj->package.elements[2] : NULL;
 
-		if ((el[0]->type != ACPI_TYPE_INTEGER)
-		    || (el[1]->type != ACPI_TYPE_STRING)
-		    || (el[2] && el[2]->type != ACPI_TYPE_LOCAL_REFERENCE
-				    && el[2]->type != ACPI_TYPE_STRING))
+		if ((el[0]->type != ACPI_TYPE_INTEGER) ||
+		    (el[1]->type != ACPI_TYPE_STRING) ||
+		    (el[2] && el[2]->type != ACPI_TYPE_LOCAL_REFERENCE &&
+		     el[2]->type != ACPI_TYPE_STRING))
 			continue;
 
 		clk_id = el[0]->integer.value;
 		con_id = acpi_clk_get_obj_id(el[1]);
-		adev = el[2] ?  acpi_obj_to_adev(el[2]) : NULL;
+		adev = el[2] ? acpi_obj_to_adev(el[2]) : NULL;
 		dname = adev ? dev_name(&adev->dev) : NULL;
 
 		if (!con_id && !adev)
@@ -407,8 +420,8 @@ int cix_acpi_parse_clkt_handle(acpi_handle handle, const char *name,
 		INIT_LIST_HEAD(&acpi_clks[i].list);
 		list_add_tail(&acpi_clks[i].list, &aclk_list);
 
-		dev_dbg(dev, "clk: id[%d] con[%s] dev[%s]\n",
-				clk_id, con_id, dname);
+		dev_dbg(dev, "clk: id[%d] con[%s] dev[%s]\n", clk_id, con_id,
+			dname);
 	}
 
 out_free:
@@ -420,7 +433,7 @@ out_free:
 EXPORT_SYMBOL_GPL(cix_acpi_parse_clkt_handle);
 
 int cix_acpi_parse_clkt(struct device *dev, const char *cname,
-		struct clk_hw *(get_hw)(struct device *, int))
+			struct clk_hw *(get_hw)(struct device *, int))
 {
 	if (!dev)
 		return -EINVAL;
@@ -430,7 +443,7 @@ int cix_acpi_parse_clkt(struct device *dev, const char *cname,
 EXPORT_SYMBOL_GPL(cix_acpi_parse_clkt);
 
 static acpi_status acpi_bus_clk_scan(acpi_handle handle, u32 level,
-					void *context, void **ret_p)
+				     void *context, void **ret_p)
 {
 	struct device *dev = context;
 	acpi_object_type acpi_type;
@@ -459,16 +472,15 @@ static int cix_acpi_clk_probe(struct platform_device *pdev)
 	acpi_status status;
 
 	status = acpi_walk_namespace(ACPI_TYPE_ANY, ACPI_ROOT_OBJECT,
-				ACPI_UINT32_MAX, acpi_bus_clk_scan,
-				NULL, &pdev->dev, NULL);
+				     ACPI_UINT32_MAX, acpi_bus_clk_scan, NULL,
+				     &pdev->dev, NULL);
 
 	/* do not ensure every resource since differnt configs */
 	return status;
 }
 
-static int cix_acpi_clk_remove(struct platform_device *pdev)
+static void cix_acpi_clk_remove(struct platform_device *pdev)
 {
-	return 0;
 }
 
 static const struct acpi_device_id __maybe_unused cix_acpi_clk_match[] = {

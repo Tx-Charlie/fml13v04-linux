@@ -87,20 +87,21 @@
 #define LOCAL_ERR_FCERR BIT(16)
 #define LOCAL_ERR_CPLTO BIT(17)
 
-#define LOCAL_INT_AER (LOCAL_ERR_PFOVFL | LOCAL_ERR_NPFOVFL | LOCAL_ERR_CPFOVFL \
-		       | LOCAL_ERR_RETTO | LOCAL_ERR_RETRL | LOCAL_ERR_PHYER | LOCAL_ERR_MLTLRX \
-		       | LOCAL_ERR_UNEXPCPL | LOCAL_ERR_FCERR | LOCAL_ERR_CPLTO)
+#define LOCAL_INT_AER                                               \
+	(LOCAL_ERR_PFOVFL | LOCAL_ERR_NPFOVFL | LOCAL_ERR_CPFOVFL | \
+	 LOCAL_ERR_RETTO | LOCAL_ERR_RETRL | LOCAL_ERR_PHYER |      \
+	 LOCAL_ERR_MLTLRX | LOCAL_ERR_UNEXPCPL | LOCAL_ERR_FCERR |  \
+	 LOCAL_ERR_CPLTO)
 #define LOCAL_ERR_LTSSTTRAN (31)
 #define LOCAL_ERR_PME (5)
 #define LOCAL_ERR_NFTTO BIT(26)
-
 
 #define PCIE_LTSSM_DISABLED 32
 #define SKY1_PHY_DELAY_US_MIN (200)
 #define SKY1_PHY_DELAY_US_MAX (SKY1_PHY_DELAY_US_MIN + 1)
 #define SKY1_PHY_TIMEOUT_CNT (50)
 
-#define PCIE_RESET_CONFIG_WAIT_MS	100
+#define PCIE_RESET_CONFIG_WAIT_MS 100
 
 static DEFINE_MUTEX(sky1_init_mutex);
 static DEFINE_MUTEX(sky1_x211_mutex);
@@ -307,7 +308,8 @@ static struct pci_dev *sky1_pcie_get_ep_pci_dev(struct sky1_pcie *pcie)
 		if (PCI_SLOT(pdev->devfn) == 0) {
 			pci_read_config_word(pdev, PCI_VENDOR_ID, &vid);
 			pci_read_config_word(pdev, PCI_DEVICE_ID, &pid);
-			dev_info(dev, "ep vid = 0x%04x, pid = 0x%04x\n", vid, pid);
+			dev_info(dev, "ep vid = 0x%04x, pid = 0x%04x\n", vid,
+				 pid);
 			ep_pdev = pdev;
 		}
 	}
@@ -350,7 +352,7 @@ static void sky1_pcie_enable_pmpme_rc(struct sky1_pcie *pcie, bool en)
 	u32 reg;
 	u8 offset;
 
-	offset = cdns_pcie_find_capability(pcie->reg_base, PCI_CAP_ID_PM);
+	offset = cdns_pcie_find_capability(pcie, PCI_CAP_ID_PM);
 	dev_info(dev, "PCI_CAP_ID_PM offset = 0x%x\n", offset);
 	reg = sky1_pcie_ctrl_readl_reg(pcie, offset + PCI_PM_CTRL);
 	/* Clear PME status. */
@@ -364,14 +366,13 @@ static void sky1_pcie_enable_pmpme_rc(struct sky1_pcie *pcie, bool en)
 
 static void sky1_pcie_pme_work_fn(struct work_struct *work)
 {
-	struct sky1_pcie *pcie =
-			container_of(work, struct sky1_pcie, pme_work);
+	struct sky1_pcie *pcie = container_of(work, struct sky1_pcie, pme_work);
 	struct device *dev = pcie->dev;
 	u32 reg;
 	u8 offset;
 
 	mutex_lock(&pcie->pme_mutex);
-	offset = cdns_pcie_find_capability(pcie->reg_base, PCI_CAP_ID_EXP);
+	offset = cdns_pcie_find_capability(pcie, PCI_CAP_ID_EXP);
 	dev_info(dev, "PCI_CAP_ID_EXP offset = 0x%x\n", offset);
 
 	/* disable pme interrupt */
@@ -498,14 +499,13 @@ static void sky1_pcie_handle_rp_aer_irq(struct sky1_pcie *pcie)
 	u32 reg32 = 0;
 
 	reg_base = pcie->reg_base + CDNS_PCIE_RP_BASE;
-	aer_offset =
-		cdns_pcie_find_ext_capability(reg_base, PCI_EXT_CAP_ID_ERR);
+	aer_offset = cdns_pcie_find_ext_capability(pcie, PCI_EXT_CAP_ID_ERR);
 	if (!aer_offset) {
 		dev_err(dev, "RC no aer capability\n");
 		return;
 	}
 
-	offset = cdns_pcie_find_capability(reg_base, PCI_CAP_ID_EXP);
+	offset = cdns_pcie_find_capability(pcie, PCI_CAP_ID_EXP);
 	if (!offset) {
 		dev_err(dev, "RC no pci capability\n");
 		return;
@@ -627,8 +627,7 @@ static irqreturn_t sky1_pcie_aer_irq_handler(int irq, void *arg)
 
 	spin_lock_irqsave(&pcie->aer_lock, flags);
 	reg_base = pcie->reg_base + CDNS_PCIE_RP_BASE;
-	aer_offset =
-		cdns_pcie_find_ext_capability(reg_base, PCI_EXT_CAP_ID_ERR);
+	aer_offset = cdns_pcie_find_ext_capability(pcie, PCI_EXT_CAP_ID_ERR);
 	if (!aer_offset) {
 		dev_err(pcie->dev, "RC no aer capability\n");
 		ret = IRQ_NONE;
@@ -640,7 +639,7 @@ static irqreturn_t sky1_pcie_aer_irq_handler(int irq, void *arg)
 	writel(sta, (reg_base + aer_offset + PCI_ERR_ROOT_STATUS));
 	source_id = readl(reg_base + aer_offset + PCI_ERR_ROOT_ERR_SRC);
 
-	dev_info(pcie->dev, "root err status =0x%x,id = 0x%x", sta, source_id );
+	dev_info(pcie->dev, "root err status =0x%x,id = 0x%x", sta, source_id);
 	if (!(sta & _AER_ERR_STATUS_MASK))
 		/* local AER error flow */
 		sky1_pcie_handle_rp_aer_irq(pcie);
@@ -662,11 +661,10 @@ static int sky1_pcie_request_irq(struct sky1_pcie *pcie)
 	INIT_WORK(&pcie->pme_work, sky1_pcie_pme_work_fn);
 	mutex_init(&pcie->pme_mutex);
 	ret = devm_request_irq(pcie->dev, pcie->local_irq,
-				sky1_pcie_local_irq_handler,
-				IRQF_SHARED, "pcie-local", pcie);
+			       sky1_pcie_local_irq_handler, IRQF_SHARED,
+			       "pcie-local", pcie);
 	if (ret) {
-		dev_err(pcie->dev,
-			"failed to request PCIe local IRQ\n");
+		dev_err(pcie->dev, "failed to request PCIe local IRQ\n");
 		return ret;
 	}
 
@@ -681,8 +679,7 @@ static int sky1_pcie_request_irq(struct sky1_pcie *pcie)
 					sky1_pcie_aer_irq_handler, IRQF_ONESHOT,
 					"pcie-aer-nf", pcie);
 	if (ret) {
-		dev_err(pcie->dev,
-			"failed to request PCIe AER IRQ\n");
+		dev_err(pcie->dev, "failed to request PCIe AER IRQ\n");
 		return ret;
 	}
 
@@ -742,8 +739,7 @@ static void sky1_pcie_ctrl_set_work_mode(struct sky1_pcie *pcie)
 	sky1_pcie_update_bits32(pcie->strap_base + STRAP_REG(4), 0x2,
 				mode << 1);
 
-	dev_dbg(dev, "%s Set work mode as: %s\n", __func__,
-		mode ? "RC" : "EP");
+	dev_dbg(dev, "%s Set work mode as: %s\n", __func__, mode ? "RC" : "EP");
 }
 
 static int sky1_pcie_ctrl_set_axi_clk_en(struct sky1_pcie *pcie, bool en)
@@ -833,7 +829,8 @@ static void sky1_pcie_clear_macro_pwr_en(struct sky1_pcie *pcie)
 	case PCIE_ID_x2:
 	case PCIE_ID_x1_0:
 	case PCIE_ID_x1_1:
-		strap_addr = pcie->rcsu_base + APP_OFFSET_STRAP_REG + STRAP_REG(40);
+		strap_addr =
+			pcie->rcsu_base + APP_OFFSET_STRAP_REG + STRAP_REG(40);
 		mutex_lock(&sky1_init_mutex);
 		if (atomic_read(&x211_macro_pwr_en_cnt) == 0) {
 			sky1_pcie_clear_bits32(strap_addr, BIT(8));
@@ -862,7 +859,8 @@ static int sky1_pcie_set_pwr_en(struct sky1_pcie *pcie, bool en)
 		mskc = (pcie->desc->id == PCIE_ID_x8) ? (0x1ff) : (0x10f);
 		if (en) {
 			sky1_pcie_set_bits32(strap_addr, 0x100);
-			ret = readl_poll_timeout(status_addr, read, !!(read&0x200), 5, 100);
+			ret = readl_poll_timeout(status_addr, read,
+						 !!(read & 0x200), 5, 100);
 			if (ret) {
 				dev_err(dev, "Set pwr en err, 0x%x\n", read);
 				return -ETIMEDOUT;
@@ -875,17 +873,22 @@ static int sky1_pcie_set_pwr_en(struct sky1_pcie *pcie, bool en)
 	case PCIE_ID_x2:
 	case PCIE_ID_x1_0:
 	case PCIE_ID_x1_1:
-		strap_addr = pcie->rcsu_base + APP_OFFSET_STRAP_REG + STRAP_REG(40);
-		status_addr = pcie->rcsu_base + APP_OFFSET_STATUS_REG + STATUS_REG(40);
+		strap_addr =
+			pcie->rcsu_base + APP_OFFSET_STRAP_REG + STRAP_REG(40);
+		status_addr = pcie->rcsu_base + APP_OFFSET_STATUS_REG +
+			      STATUS_REG(40);
 		msk = 0xf;
 		mskc = 0x10f;
 		mutex_lock(&sky1_init_mutex);
 		if (en) {
 			if (atomic_read(&pwr_en_cnt) == 0) {
 				sky1_pcie_set_bits32(strap_addr, 0x100);
-				ret = readl_poll_timeout(status_addr, read, !!(read&0x200), 5, 100);
+				ret = readl_poll_timeout(status_addr, read,
+							 !!(read & 0x200), 5,
+							 100);
 				if (ret) {
-					dev_err(dev, "Set pwr en err, 0x%x\n", read);
+					dev_err(dev, "Set pwr en err, 0x%x\n",
+						read);
 					return -ETIMEDOUT;
 				}
 
@@ -903,7 +906,8 @@ static int sky1_pcie_set_pwr_en(struct sky1_pcie *pcie, bool en)
 		return -EINVAL;
 	}
 
-	dev_dbg(dev, "Set STRAP_REG(0x%px) as :0x%x\n", strap_addr, readl(strap_addr));
+	dev_dbg(dev, "Set STRAP_REG(0x%px) as :0x%x\n", strap_addr,
+		readl(strap_addr));
 
 	return ret;
 }
@@ -1006,7 +1010,8 @@ static int sky1_pcie_set_phy_pnn_rst_n(struct sky1_pcie *pcie, int en)
 	return ret;
 }
 
-static int __maybe_unused sky1_pcie_set_link_training_en(struct sky1_pcie *pcie, int en)
+static int __maybe_unused sky1_pcie_set_link_training_en(struct sky1_pcie *pcie,
+							 int en)
 {
 	struct device *dev = pcie->dev;
 	void __iomem *addr;
@@ -1031,7 +1036,7 @@ static int __maybe_unused sky1_pcie_set_link_training_en(struct sky1_pcie *pcie,
 }
 
 static const struct sky1_pcie_ctrl_desc *
-	sky1_pcie_find_desc_by_id(struct sky1_pcie *pcie, u32 id)
+sky1_pcie_find_desc_by_id(struct sky1_pcie *pcie, u32 id)
 {
 	const struct sky1_pcie_ctrl_desc *p = pcie->data->desc;
 	const struct sky1_pcie_ctrl_desc *desc = NULL;
@@ -1419,7 +1424,8 @@ static int sky1_pcie_parse_aer_irq(struct sky1_pcie *pcie)
 	struct platform_device *pdev = to_platform_device(dev);
 	struct device_node *np = pdev->dev.of_node;
 
-	pcie->is_aer_uncor_panic = of_property_read_bool(np, "sky1,aer-uncor-panic");
+	pcie->is_aer_uncor_panic =
+		of_property_read_bool(np, "sky1,aer-uncor-panic");
 	/* AER correctable */
 	pcie->aer_c_irq = platform_get_irq_byname(pdev, "aer_c");
 
@@ -1439,8 +1445,7 @@ static void devm_phy_release(struct device *dev, void *res)
 	phy_put(dev, phy);
 }
 
-static struct phy *devm_phy_ref_get(struct device *dev,
-			const char *string)
+static struct phy *devm_phy_ref_get(struct device *dev, const char *string)
 {
 	struct phy **ptr, *phy;
 	struct fwnode_handle *fwnode;
@@ -1470,7 +1475,7 @@ static struct phy *devm_phy_ref_get(struct device *dev,
 }
 
 static int sky1_pcie_parse_property(struct platform_device *pdev,
-			       struct sky1_pcie *pcie)
+				    struct sky1_pcie *pcie)
 {
 	int ret = 0;
 
@@ -1583,7 +1588,7 @@ static void sky1_pcie_set_devctrl(struct sky1_pcie *pcie)
 	u32 reg;
 	u16 offset;
 
-	offset = cdns_pcie_find_capability(pcie->reg_base, PCI_CAP_ID_EXP);
+	offset = cdns_pcie_find_capability(pcie, PCI_CAP_ID_EXP);
 	if (!offset)
 		return;
 	dev_dbg(dev, "PCI_CAP_ID_EXP offset = 0x%x\n", offset);
@@ -1610,8 +1615,7 @@ static void sky1_pcie_set_preset_val(struct sky1_pcie *pcie)
 	struct device *dev = pcie->dev;
 	u16 offset;
 
-	offset = cdns_pcie_find_ext_capability(pcie->reg_base,
-					       PCI_EXT_CAP_ID_SECPCI);
+	offset = cdns_pcie_find_ext_capability(pcie, PCI_EXT_CAP_ID_SECPCI);
 	if (!offset)
 		return;
 	dev_dbg(dev, "PCI_EXT_CAP_ID_SECPCI offset = 0x%x\n", offset);
@@ -1621,8 +1625,7 @@ static void sky1_pcie_set_preset_val(struct sky1_pcie *pcie)
 	sky1_pcie_ctrl_writel_reg(pcie, offset + 0x14, 0x27072707);
 	sky1_pcie_ctrl_writel_reg(pcie, offset + 0x18, 0x27072707);
 
-	offset = cdns_pcie_find_ext_capability(pcie->reg_base,
-					       PCI_EXT_CAP_ID_PL_16GT);
+	offset = cdns_pcie_find_ext_capability(pcie, PCI_EXT_CAP_ID_PL_16GT);
 	if (!offset)
 		return;
 	dev_dbg(dev, "PCI_EXT_CAP_ID_PL_16GT offset = 0x%x\n", offset);
@@ -1637,7 +1640,8 @@ static void sky1_pcie_set_refclk(struct sky1_pcie *pcie, bool en)
 {
 	static atomic_t x211_refclk_enable_cnt = ATOMIC_INIT(0);
 	u32 mask = 0, value = 0;
-	void __iomem *strap_addr = NULL;;
+	void __iomem *strap_addr = NULL;
+	;
 
 	/* set ext_refclk_detected_cfg */
 	mask |= EXT_REFCLK_DETECTED_CFG;
@@ -1664,7 +1668,8 @@ static void sky1_pcie_set_refclk(struct sky1_pcie *pcie, bool en)
 	case PCIE_ID_x2:
 	case PCIE_ID_x1_0:
 	case PCIE_ID_x1_1:
-		strap_addr = pcie->rcsu_base + APP_OFFSET_STRAP_REG + STRAP_REG(40);
+		strap_addr =
+			pcie->rcsu_base + APP_OFFSET_STRAP_REG + STRAP_REG(40);
 		mutex_lock(&sky1_init_mutex);
 		if (en) {
 			sky1_pcie_update_bits32(strap_addr, mask, value);
@@ -1697,7 +1702,7 @@ static void sky1_pcie_set_l0s_disable(struct sky1_pcie *pcie)
 	if (!of_property_read_bool(np, "aspm-no-l0s"))
 		return;
 
-	offset = cdns_pcie_find_capability(pcie->reg_base, PCI_CAP_ID_EXP);
+	offset = cdns_pcie_find_capability(pcie, PCI_CAP_ID_EXP);
 	/* Clear L0s from RC's link cap */
 	reg = sky1_pcie_ctrl_readl_reg(pcie, offset + PCI_EXP_LNKCAP);
 	reg &= ~PCI_EXP_LNKCAP_ASPM_L0S;
@@ -1731,7 +1736,7 @@ static void sky1_pcie_init(struct sky1_pcie *pcie)
 
 static void sky1_pcie_set_strap_pin0(struct sky1_pcie *pcie)
 {
-	union ustrap_pin0 strap_pin0 = {0};
+	union ustrap_pin0 strap_pin0 = { 0 };
 
 	strap_pin0.reg = readl(pcie->strap_base + STRAP_REG(0));
 	/* clear bypass_phase23 and bypass_remote_eq */
@@ -1898,7 +1903,7 @@ static struct resource *devm_pci_create_bus_range(struct device *dev)
 		return NULL;
 
 	ret = device_property_read_u32_array(dev, "bus-range", bus_range,
-					   ARRAY_SIZE(bus_range));
+					     ARRAY_SIZE(bus_range));
 	if (ret) {
 		devm_kfree(dev, res);
 		return NULL;
@@ -1913,7 +1918,7 @@ static struct resource *devm_pci_create_bus_range(struct device *dev)
 }
 
 int devm_acpi_pci_bridge_init(struct device *dev,
-			struct pci_host_bridge *bridge)
+			      struct pci_host_bridge *bridge)
 {
 	struct resource *res = NULL;
 	struct resource_entry *entry, *tmp;
@@ -1968,8 +1973,8 @@ static void acpi_pci_alloc_host_bridge_release(void *data)
 	pci_free_host_bridge(data);
 }
 
-static struct pci_host_bridge *devm_acpi_pci_alloc_host_bridge(struct device *dev,
-						   size_t priv)
+static struct pci_host_bridge *
+devm_acpi_pci_alloc_host_bridge(struct device *dev, size_t priv)
 {
 	int ret;
 	struct pci_host_bridge *bridge;
@@ -1994,8 +1999,8 @@ static struct pci_host_bridge *devm_acpi_pci_alloc_host_bridge(struct device *de
 	return bridge;
 }
 #else
-static struct pci_host_bridge *devm_acpi_pci_alloc_host_bridge(struct device *dev,
-						   size_t priv)
+static struct pci_host_bridge *
+devm_acpi_pci_alloc_host_bridge(struct device *dev, size_t priv)
 {
 	return NULL;
 }
@@ -2080,7 +2085,7 @@ static void sky1_pcie_get_linkctrl_offset(struct sky1_pcie *pcie)
 {
 	/* PCI_EXP_LNKCTL_LD: Link Disable */
 	pcie->linkctrl_offset =
-		cdns_pcie_find_capability(pcie->reg_base, PCI_CAP_ID_EXP) +
+		cdns_pcie_find_capability(pcie, PCI_CAP_ID_EXP) +
 		PCI_EXP_LNKCTL;
 }
 
@@ -2153,7 +2158,7 @@ static int _sky1_pcie_syscore_op_shutdown(struct sky1_pcie *pcie)
 	return 0;
 }
 
-static void sky1_pcie_syscore_op_shutdown(void)
+static void sky1_pcie_syscore_op_shutdown(void *data)
 {
 	struct sky1_pcie *pcie;
 
@@ -2164,6 +2169,10 @@ static void sky1_pcie_syscore_op_shutdown(void)
 
 static struct syscore_ops sky1_pcie_syscore_ops = {
 	.shutdown = sky1_pcie_syscore_op_shutdown,
+};
+
+static struct syscore sky1_pcie_syscore = {
+	.ops = &sky1_pcie_syscore_ops,
 };
 
 static void sky1_pcie_x211_enum_lock(struct sky1_pcie *pcie, bool lock)
@@ -2214,7 +2223,7 @@ static int sky1_pcie_really_probe(void *p)
 	mutex_lock(&sky1_init_mutex);
 	/* Register for syscore ops only when first instance probed */
 	if (list_empty(&sky1_pcie_list))
-		register_syscore_ops(&sky1_pcie_syscore_ops);
+		register_syscore(&sky1_pcie_syscore);
 
 	/*
 	 * Add the qcom_pcie list of each PCIe instance probed to
@@ -2369,7 +2378,7 @@ err_vsupply_3v3:
 	return ret;
 }
 
-static int sky1_pcie_remove(struct platform_device *pdev)
+static void sky1_pcie_remove(struct platform_device *pdev)
 {
 	struct sky1_pcie *pcie = platform_get_drvdata(pdev);
 	struct device *dev = &pdev->dev;
@@ -2406,10 +2415,8 @@ static int sky1_pcie_remove(struct platform_device *pdev)
 	if (pcie->is_probe) {
 		list_del(&pcie->list);
 		if (list_empty(&sky1_pcie_list))
-			unregister_syscore_ops(&sky1_pcie_syscore_ops);
+			unregister_syscore(&sky1_pcie_syscore);
 	}
-
-	return 0;
 }
 
 static const struct sky1_pcie_data sky1_pcie_rc_data = {

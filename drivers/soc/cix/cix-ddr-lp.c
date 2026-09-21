@@ -10,7 +10,7 @@
 #include <linux/of.h>
 #include <linux/arm-smccc.h>
 
-#define CIX_SIP_SET_DDRLP	0xc2000010
+#define CIX_SIP_SET_DDRLP 0xc2000010
 
 struct cix_ddrlp_data {
 	int value;
@@ -48,7 +48,7 @@ static int cix_enable_ddrlp(struct cix_ddrlp_data *dd)
 
 	mutex_lock(&dd->lock);
 	if (dd->disable_depth == 0) {
-		WARN(1,"ddr lp is already enabled!\n");
+		WARN(1, "ddr lp is already enabled!\n");
 		mutex_unlock(&dd->lock);
 		return 0;
 	}
@@ -77,8 +77,8 @@ int cix_set_ddrlp(int on)
 }
 EXPORT_SYMBOL(cix_set_ddrlp);
 
-static ssize_t on_show(struct device *dev,
-			     struct device_attribute *attr, char *buf)
+static ssize_t on_show(struct device *dev, struct device_attribute *attr,
+		       char *buf)
 {
 	struct cix_ddrlp_data *dd = dev_get_drvdata(dev);
 
@@ -86,7 +86,7 @@ static ssize_t on_show(struct device *dev,
 }
 
 static ssize_t on_store(struct device *dev, struct device_attribute *attr,
-			      const char *buf, size_t count)
+			const char *buf, size_t count)
 {
 	int ret;
 	int value;
@@ -96,7 +96,7 @@ static ssize_t on_store(struct device *dev, struct device_attribute *attr,
 	if (ret)
 		return -EINVAL;
 
-	if (value != 0 &&value != 1)
+	if (value != 0 && value != 1)
 		return -EINVAL;
 
 	if (value == dd->value)
@@ -104,7 +104,7 @@ static ssize_t on_store(struct device *dev, struct device_attribute *attr,
 
 	ret = cix_set_ddrlp(value);
 	if (ret < 0) {
-		dev_err(dev,"failed: set ddr lp!!!\n");
+		dev_err(dev, "failed: set ddr lp!!!\n");
 		return -EINVAL;
 	}
 	return count;
@@ -125,8 +125,7 @@ static int cix_ddrlp_probe(struct platform_device *pdev)
 	struct cix_ddrlp_data *cix_ddrlp;
 	int ret;
 
-	cix_ddrlp =
-		devm_kzalloc(&pdev->dev, sizeof(*cix_ddrlp), GFP_KERNEL);
+	cix_ddrlp = devm_kzalloc(&pdev->dev, sizeof(*cix_ddrlp), GFP_KERNEL);
 	if (!cix_ddrlp)
 		return -ENOMEM;
 	gdd = cix_ddrlp;
@@ -143,9 +142,8 @@ static int cix_ddrlp_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cix_ddrlp_remove(struct platform_device *pdev)
+static void cix_ddrlp_remove(struct platform_device *pdev)
 {
-	return 0;
 }
 
 #ifdef CONFIG_OF

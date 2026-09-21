@@ -125,8 +125,7 @@ static void cix_ap2se_ipc_rx_callback(struct mbox_client *cl, void *message)
 	complete(&mdev->rsp_comp); // notify send message
 }
 
-int cix_ap2se_ipc_send(uint32_t cmd_id, char *data, size_t len,
-			bool need_reply)
+int cix_ap2se_ipc_send(uint32_t cmd_id, char *data, size_t len, bool need_reply)
 {
 	int ret;
 	struct cix_ap2se_ipc_dev *mdev = &g_ap2se_ipc_dev;
@@ -151,9 +150,9 @@ int cix_ap2se_ipc_send(uint32_t cmd_id, char *data, size_t len,
 	msg[1] = cmd_id;
 	memcpy(msg + MBOX_HEADER_NUM, data, len);
 
-	if (!in_irq())
+	if (!in_hardirq())
 		mutex_lock(&mdev->mbox_lock);
-	if (in_irq())
+	if (in_hardirq())
 		need_reply = 0;
 	if (need_reply)
 		reinit_completion(&mdev->rsp_comp);
@@ -176,7 +175,7 @@ int cix_ap2se_ipc_send(uint32_t cmd_id, char *data, size_t len,
 
 out:
 	kfree(msg);
-	if (!in_irq())
+	if (!in_hardirq())
 		mutex_unlock(&mdev->mbox_lock);
 	return ret;
 }
@@ -244,12 +243,11 @@ static int cix_ap2se_ipc_probe(struct platform_device *pdev)
 	mdev->init_status = 1;
 	return ret;
 }
-static int cix_ap2se_ipc_remove(struct platform_device *pdev)
+static void cix_ap2se_ipc_remove(struct platform_device *pdev)
 {
 	struct cix_ap2se_ipc_dev *mdev = platform_get_drvdata(pdev);
 
 	cix_ap2se_ipc_free_mbox(mdev);
-	return 0;
 }
 
 static int cix_ap2se_ipc_suspend(struct device *dev)
@@ -289,9 +287,8 @@ static const struct of_device_id cix_ap2se_ipc_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, cix_ap2se_ipc_of_match);
 
-static const struct dev_pm_ops cix_ap2se_ipc_pm_ops = {
-	SET_SYSTEM_SLEEP_PM_OPS(cix_ap2se_ipc_suspend, cix_ap2se_ipc_resume)
-};
+static const struct dev_pm_ops cix_ap2se_ipc_pm_ops = { SET_SYSTEM_SLEEP_PM_OPS(
+	cix_ap2se_ipc_suspend, cix_ap2se_ipc_resume) };
 
 static struct platform_driver cix_ap2se_ipc_driver = {
 	.probe = cix_ap2se_ipc_probe,
