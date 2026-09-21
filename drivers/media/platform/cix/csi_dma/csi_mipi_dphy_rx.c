@@ -250,7 +250,7 @@ mipi_dphy_rx_g_frame_interval(struct v4l2_subdev *sd,
 	if (!remote_sd)
 		return -EINVAL;
 
-	return v4l2_subdev_call(remote_sd, video, g_frame_interval, interval);
+	return v4l2_subdev_call(remote_sd, pad, get_frame_interval, NULL, interval);
 }
 
 static int
@@ -264,7 +264,7 @@ mipi_dphy_rx_s_frame_interval(struct v4l2_subdev *sd,
 	if (!remote_sd)
 		return -EINVAL;
 
-	return v4l2_subdev_call(remote_sd, video, s_frame_interval, interval);
+	return v4l2_subdev_call(remote_sd, pad, set_frame_interval, NULL, interval);
 }
 
 static int mipi_dphy_rx_s_stream(struct v4l2_subdev *sd, int enable)
