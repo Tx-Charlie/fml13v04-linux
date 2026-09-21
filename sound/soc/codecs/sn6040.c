@@ -34,8 +34,8 @@
 #include <sound/soc-dapm.h>
 #include "sn6040.h"
 
-#define PLL_OUT_HZ_48	(1024 * 3 * 48000)
-#define BITS_PER_SLOT	8
+#define PLL_OUT_HZ_48 (1024 * 3 * 48000)
+#define BITS_PER_SLOT 8
 
 /* codec private data, need to check */
 struct sn6040_priv {
@@ -82,18 +82,9 @@ static const struct {
 	unsigned int mclk;
 	unsigned int div;
 } mclk_pre_div[] = {
-	{ 6144000, 1 },
-	{ 6912000, 3 },
-	{ 12288000, 2 },
-	{ 16384000, 3 },
-	{ 18432000, 4 },
-	{ 19200000, 3 },
-	{ 26000000, 4 },
-	{ 27000000, 5 },
-	{ 27648000, 6 },
-	{ 28224000, 5 },
-	{ 36864000, 6 },
-	{ 49152000, 8 },
+	{ 6144000, 1 },	 { 6912000, 3 },  { 12288000, 2 }, { 16384000, 3 },
+	{ 18432000, 4 }, { 19200000, 3 }, { 26000000, 4 }, { 27000000, 5 },
+	{ 27648000, 6 }, { 28224000, 5 }, { 36864000, 6 }, { 49152000, 8 },
 };
 
 /*
@@ -110,7 +101,7 @@ static const struct reg_default sn6040_reg_defaults[] = {
 static const struct reg_sequence sn6040_reg_init[] = {
 	//TODO, define regs' init value
 	{ SN6040_DIGITAL_BIOS_TEST3_MSB, 0x03 },
-	{ SN6040_DIGITAL_BIOS_TEST2_LSB,  0x6C},
+	{ SN6040_DIGITAL_BIOS_TEST2_LSB, 0x6C },
 	// {SN6040_ANALOG_TEST4, 0x000},
 	// {SN6040_ANALOG_TEST5, 0x000},
 	// {SN6040_ANALOG_TEST6, 0xBF8},
@@ -212,149 +203,149 @@ static unsigned int sn6040_register_size(unsigned int reg)
 static bool sn6040_readable_register(struct device *dev, unsigned int reg)
 {
 	//TODO
-	switch(reg){
-		case SN6040_VENDOR_ID:
-		case SN6040_REVISION_ID:
-		case SN6040_CURRENT_BCLK_FREQUENCY:
-		case SN6040_AFG_POWER_STATE:
-		case SN6040_AFG_UNSOLICITED:
-		case SN6040_AFG_GPIO_DATA:
-		case SN6040_AFG_GPIO_ENABLE:
-		case SN6040_AFG_GPIO_DIRECTION:
-		case SN6040_AFG_GPIO_WAKE:
-		case SN6040_AFG_GPIO_UM_ENABLE:
-		case SN6040_AFG_GPIO_STICKY_MASK:
-		case SN6040_DAC1_CONVERTER_FORMAT:
-		case SN6040_DAC1_AMP_GAIN_RIGHT:
-		case SN6040_DAC1_AMP_GAIN_LEFT:
-		case SN6040_DAC1_POWER_STATE:
-		case SN6040_DAC1_CONVERTER_STREAM_CHANNEL:
-		case SN6040_DAC1_EAPD:
-		case SN6040_DAC2_CONVERTER_FORMAT:
-		case SN6040_DAC2_AMP_GAIN_RIGHT:
-		case SN6040_DAC2_AMP_GAIN_LEFT:
-		case SN6040_DAC2_POWER_STATE:
-		case SN6040_DAC2_CONVERTER_STREAM_CHANNEL:
-		case SN6040_ADC1_CONVERTER_FORMAT:
-		case SN6040_ADC1_AMP_GAIN_RIGHT_0:
-		case SN6040_ADC1_AMP_GAIN_LEFT_0:
-		case SN6040_ADC1_AMP_GAIN_RIGHT_1:
-		case SN6040_ADC1_AMP_GAIN_LEFT_1:
-		case SN6040_ADC1_AMP_GAIN_RIGHT_2:
-		case SN6040_ADC1_AMP_GAIN_LEFT_2:
-		case SN6040_ADC1_AMP_GAIN_RIGHT_3:
-		case SN6040_ADC1_AMP_GAIN_LEFT_3:
-		case SN6040_ADC1_AMP_GAIN_RIGHT_4:
-		case SN6040_ADC1_AMP_GAIN_LEFT_4:
-		case SN6040_ADC1_AMP_GAIN_RIGHT_5:
-		case SN6040_ADC1_AMP_GAIN_LEFT_5:
-		case SN6040_ADC1_AMP_GAIN_RIGHT_6:
-		case SN6040_ADC1_AMP_GAIN_LEFT_6:
-		case SN6040_ADC1_CONNECTION_SELECT:
-		case SN6040_ADC1_POWER_STATE:
-		case SN6040_ADC1_CONVERTER_STREAM_CHANNEL:
-		case SN6040_ADC2_CONVERTER_FORMAT:
-		case SN6040_ADC2_AMP_GAIN_RIGHT_0:
-		case SN6040_ADC2_AMP_GAIN_LEFT_0:
-		case SN6040_ADC2_AMP_GAIN_RIGHT_1:
-		case SN6040_ADC2_AMP_GAIN_LEFT_1:
-		case SN6040_ADC2_AMP_GAIN_RIGHT_2:
-		case SN6040_ADC2_AMP_GAIN_LEFT_2:
-		case SN6040_ADC2_CONNECTION_SELECT:
-		case SN6040_ADC2_POWER_STATE:
-		case SN6040_ADC2_CONVERTER_STREAM_CHANNEL:
-		case SN6040_PORTA_CONNECTION_SELECT:
-		case SN6040_PORTA_POWER_STATE:
-		case SN6040_PORTA_PIN_CTRL:
-		case SN6040_PORTA_UNSOLICITED_RESPONSE:
-		case SN6040_PORTA_PIN_SENSE:
-		case SN6040_PORTA_EAPD:
-		case SN6040_PORTB_POWER_STATE:
-		case SN6040_PORTB_PIN_CTRL:
-		case SN6040_PORTB_UNSOLICITED_RESPONSE:
-		case SN6040_PORTB_PIN_SENSE:
-		case SN6040_PORTB_EAPD:
-		case SN6040_PORTB_AMP_GAIN_RIGHT:
-		case SN6040_PORTB_AMP_GAIN_LEFT:
-		case SN6040_PORTC_POWER_STATE:
-		case SN6040_PORTC_PIN_CTRL:
-		case SN6040_PORTC_UNSOLICITED_RESPONSE:
-		case SN6040_PORTC_PIN_SENSE:
-		case SN6040_PORTC_AMP_GAIN_RIGHT:
-		case SN6040_PORTC_AMP_GAIN_LEFT:
-		case SN6040_PORTD_POWER_STATE:
-		case SN6040_PORTD_PIN_CTRL:
-		case SN6040_PORTD_UNSOLICITED_RESPONSE:
-		case SN6040_PORTD_PIN_SENSE:
-		case SN6040_PORTD_AMP_GAIN_RIGHT:
-		case SN6040_PORTD_AMP_GAIN_LEFT:
-		case SN6040_PORTG_POWER_STATE:
-		case SN6040_PORTG_PIN_CTRL:
-		case SN6040_PORTG_CONNECTION_SELECT:
-		case SN6040_PORTG_EAPD:
-		case SN6040_MIXER_POWER_STATE:
-		case SN6040_MIXER_AMP_GAIN_RIGHT_0:
-		case SN6040_MIXER_AMP_GAIN_LEFT_0:
-		case SN6040_MIXER_AMP_GAIN_RIGHT_1:
-		case SN6040_MIXER_AMP_GAIN_LEFT_1:
-		case SN6040_EQ_ENABLE_BYPASS_LSB:
-		case SN6040_EQ_ENABLE_BYPASS_MSB:
-		case SN6040_EQ_B0_COEFF_LSB:
-		case SN6040_EQ_B0_COEFF_MSB:
-		case SN6040_EQ_B1_COEFF_LSB:
-		case SN6040_EQ_B1_COEFF_MSB:
-		case SN6040_EQ_B2_COEFF_LSB:
-		case SN6040_EQ_B2_COEFF_MSB:
-		case SN6040_EQ_A1_COEFF_LSB:
-		case SN6040_EQ_A1_COEFF_MSB:
-		case SN6040_EQ_A2_COEFF_LSB:
-		case SN6040_EQ_A2_COEFF_MSB:
-		case SN6040_EQ_G_COEFF_REGISTER:
-		case SN6040_SPKR_DRC_ENABLE_STEP:
-		case SN6040_SPKR_DRC_TEST:
-		case SN6040_DIGITAL_BIOS_TEST0_LSB:
-		case SN6040_DIGITAL_BIOS_TEST0_MSB:
-		case SN6040_DIGITAL_BIOS_TEST2_LSB:
-		case SN6040_DIGITAL_BIOS_TEST2_MSB:
-		case SN6040_DIGITAL_BIOS_TEST3_MSB:
-		case SN6040_I2SPCM_CONTROL1:
-		case SN6040_I2SPCM_CONTROL2:
-		case SN6040_I2SPCM_CONTROL3:
-		case SN6040_I2SPCM_CONTROL4:
-		case SN6040_I2SPCM_CONTROL5:
-		case SN6040_I2SPCM_CONTROL6:
-		case SN6040_UM_INTERRUPT_CRTL:
-		case SN6040_CODEC_TEST0:
-		case SN6040_CODEC_TEST2:
-		case SN6040_CODEC_TEST20:
-		case SN6040_CODEC_TEST24:
-		case SN6040_CODEC_TEST25:
-		case SN6040_CODEC_TEST26:
-		case SN6040_ANALOG_TEST4:
-		case SN6040_ANALOG_TEST5:
-		case SN6040_ANALOG_TEST6:
-		case SN6040_ANALOG_TEST7:
-		case SN6040_ANALOG_TEST8:
-		case SN6040_ANALOG_TEST9:
-		case SN6040_ANALOG_TEST10:
-		case SN6040_ANALOG_TEST11:
-		case SN6040_ANALOG_TEST12:
-		case SN6040_ANALOG_TEST13:
-		case SN6040_DIGITAL_TEST0:
-		case SN6040_DIGITAL_TEST1:
-		case SN6040_DIGITAL_TEST2:
-		case SN6040_DIGITAL_TEST11:
-		case SN6040_DIGITAL_TEST12:
-		case SN6040_DIGITAL_TEST13:
-		case SN6040_DIGITAL_TEST15:
-		case SN6040_DIGITAL_TEST16:
-		case SN6040_DIGITAL_TEST17:
-		case SN6040_DIGITAL_TEST18:
-		case SN6040_DIGITAL_TEST19:
-		case SN6040_DIGITAL_TEST20:
-			return true;
-		default:
-			return false;
+	switch (reg) {
+	case SN6040_VENDOR_ID:
+	case SN6040_REVISION_ID:
+	case SN6040_CURRENT_BCLK_FREQUENCY:
+	case SN6040_AFG_POWER_STATE:
+	case SN6040_AFG_UNSOLICITED:
+	case SN6040_AFG_GPIO_DATA:
+	case SN6040_AFG_GPIO_ENABLE:
+	case SN6040_AFG_GPIO_DIRECTION:
+	case SN6040_AFG_GPIO_WAKE:
+	case SN6040_AFG_GPIO_UM_ENABLE:
+	case SN6040_AFG_GPIO_STICKY_MASK:
+	case SN6040_DAC1_CONVERTER_FORMAT:
+	case SN6040_DAC1_AMP_GAIN_RIGHT:
+	case SN6040_DAC1_AMP_GAIN_LEFT:
+	case SN6040_DAC1_POWER_STATE:
+	case SN6040_DAC1_CONVERTER_STREAM_CHANNEL:
+	case SN6040_DAC1_EAPD:
+	case SN6040_DAC2_CONVERTER_FORMAT:
+	case SN6040_DAC2_AMP_GAIN_RIGHT:
+	case SN6040_DAC2_AMP_GAIN_LEFT:
+	case SN6040_DAC2_POWER_STATE:
+	case SN6040_DAC2_CONVERTER_STREAM_CHANNEL:
+	case SN6040_ADC1_CONVERTER_FORMAT:
+	case SN6040_ADC1_AMP_GAIN_RIGHT_0:
+	case SN6040_ADC1_AMP_GAIN_LEFT_0:
+	case SN6040_ADC1_AMP_GAIN_RIGHT_1:
+	case SN6040_ADC1_AMP_GAIN_LEFT_1:
+	case SN6040_ADC1_AMP_GAIN_RIGHT_2:
+	case SN6040_ADC1_AMP_GAIN_LEFT_2:
+	case SN6040_ADC1_AMP_GAIN_RIGHT_3:
+	case SN6040_ADC1_AMP_GAIN_LEFT_3:
+	case SN6040_ADC1_AMP_GAIN_RIGHT_4:
+	case SN6040_ADC1_AMP_GAIN_LEFT_4:
+	case SN6040_ADC1_AMP_GAIN_RIGHT_5:
+	case SN6040_ADC1_AMP_GAIN_LEFT_5:
+	case SN6040_ADC1_AMP_GAIN_RIGHT_6:
+	case SN6040_ADC1_AMP_GAIN_LEFT_6:
+	case SN6040_ADC1_CONNECTION_SELECT:
+	case SN6040_ADC1_POWER_STATE:
+	case SN6040_ADC1_CONVERTER_STREAM_CHANNEL:
+	case SN6040_ADC2_CONVERTER_FORMAT:
+	case SN6040_ADC2_AMP_GAIN_RIGHT_0:
+	case SN6040_ADC2_AMP_GAIN_LEFT_0:
+	case SN6040_ADC2_AMP_GAIN_RIGHT_1:
+	case SN6040_ADC2_AMP_GAIN_LEFT_1:
+	case SN6040_ADC2_AMP_GAIN_RIGHT_2:
+	case SN6040_ADC2_AMP_GAIN_LEFT_2:
+	case SN6040_ADC2_CONNECTION_SELECT:
+	case SN6040_ADC2_POWER_STATE:
+	case SN6040_ADC2_CONVERTER_STREAM_CHANNEL:
+	case SN6040_PORTA_CONNECTION_SELECT:
+	case SN6040_PORTA_POWER_STATE:
+	case SN6040_PORTA_PIN_CTRL:
+	case SN6040_PORTA_UNSOLICITED_RESPONSE:
+	case SN6040_PORTA_PIN_SENSE:
+	case SN6040_PORTA_EAPD:
+	case SN6040_PORTB_POWER_STATE:
+	case SN6040_PORTB_PIN_CTRL:
+	case SN6040_PORTB_UNSOLICITED_RESPONSE:
+	case SN6040_PORTB_PIN_SENSE:
+	case SN6040_PORTB_EAPD:
+	case SN6040_PORTB_AMP_GAIN_RIGHT:
+	case SN6040_PORTB_AMP_GAIN_LEFT:
+	case SN6040_PORTC_POWER_STATE:
+	case SN6040_PORTC_PIN_CTRL:
+	case SN6040_PORTC_UNSOLICITED_RESPONSE:
+	case SN6040_PORTC_PIN_SENSE:
+	case SN6040_PORTC_AMP_GAIN_RIGHT:
+	case SN6040_PORTC_AMP_GAIN_LEFT:
+	case SN6040_PORTD_POWER_STATE:
+	case SN6040_PORTD_PIN_CTRL:
+	case SN6040_PORTD_UNSOLICITED_RESPONSE:
+	case SN6040_PORTD_PIN_SENSE:
+	case SN6040_PORTD_AMP_GAIN_RIGHT:
+	case SN6040_PORTD_AMP_GAIN_LEFT:
+	case SN6040_PORTG_POWER_STATE:
+	case SN6040_PORTG_PIN_CTRL:
+	case SN6040_PORTG_CONNECTION_SELECT:
+	case SN6040_PORTG_EAPD:
+	case SN6040_MIXER_POWER_STATE:
+	case SN6040_MIXER_AMP_GAIN_RIGHT_0:
+	case SN6040_MIXER_AMP_GAIN_LEFT_0:
+	case SN6040_MIXER_AMP_GAIN_RIGHT_1:
+	case SN6040_MIXER_AMP_GAIN_LEFT_1:
+	case SN6040_EQ_ENABLE_BYPASS_LSB:
+	case SN6040_EQ_ENABLE_BYPASS_MSB:
+	case SN6040_EQ_B0_COEFF_LSB:
+	case SN6040_EQ_B0_COEFF_MSB:
+	case SN6040_EQ_B1_COEFF_LSB:
+	case SN6040_EQ_B1_COEFF_MSB:
+	case SN6040_EQ_B2_COEFF_LSB:
+	case SN6040_EQ_B2_COEFF_MSB:
+	case SN6040_EQ_A1_COEFF_LSB:
+	case SN6040_EQ_A1_COEFF_MSB:
+	case SN6040_EQ_A2_COEFF_LSB:
+	case SN6040_EQ_A2_COEFF_MSB:
+	case SN6040_EQ_G_COEFF_REGISTER:
+	case SN6040_SPKR_DRC_ENABLE_STEP:
+	case SN6040_SPKR_DRC_TEST:
+	case SN6040_DIGITAL_BIOS_TEST0_LSB:
+	case SN6040_DIGITAL_BIOS_TEST0_MSB:
+	case SN6040_DIGITAL_BIOS_TEST2_LSB:
+	case SN6040_DIGITAL_BIOS_TEST2_MSB:
+	case SN6040_DIGITAL_BIOS_TEST3_MSB:
+	case SN6040_I2SPCM_CONTROL1:
+	case SN6040_I2SPCM_CONTROL2:
+	case SN6040_I2SPCM_CONTROL3:
+	case SN6040_I2SPCM_CONTROL4:
+	case SN6040_I2SPCM_CONTROL5:
+	case SN6040_I2SPCM_CONTROL6:
+	case SN6040_UM_INTERRUPT_CRTL:
+	case SN6040_CODEC_TEST0:
+	case SN6040_CODEC_TEST2:
+	case SN6040_CODEC_TEST20:
+	case SN6040_CODEC_TEST24:
+	case SN6040_CODEC_TEST25:
+	case SN6040_CODEC_TEST26:
+	case SN6040_ANALOG_TEST4:
+	case SN6040_ANALOG_TEST5:
+	case SN6040_ANALOG_TEST6:
+	case SN6040_ANALOG_TEST7:
+	case SN6040_ANALOG_TEST8:
+	case SN6040_ANALOG_TEST9:
+	case SN6040_ANALOG_TEST10:
+	case SN6040_ANALOG_TEST11:
+	case SN6040_ANALOG_TEST12:
+	case SN6040_ANALOG_TEST13:
+	case SN6040_DIGITAL_TEST0:
+	case SN6040_DIGITAL_TEST1:
+	case SN6040_DIGITAL_TEST2:
+	case SN6040_DIGITAL_TEST11:
+	case SN6040_DIGITAL_TEST12:
+	case SN6040_DIGITAL_TEST13:
+	case SN6040_DIGITAL_TEST15:
+	case SN6040_DIGITAL_TEST16:
+	case SN6040_DIGITAL_TEST17:
+	case SN6040_DIGITAL_TEST18:
+	case SN6040_DIGITAL_TEST19:
+	case SN6040_DIGITAL_TEST20:
+		return true;
+	default:
+		return false;
 	}
 }
 
@@ -362,27 +353,26 @@ static bool sn6040_readable_register(struct device *dev, unsigned int reg)
 static bool sn6040_volatile_register(struct device *dev, unsigned int reg)
 {
 	//TODO
-	switch(reg) {
-		case SN6040_VENDOR_ID:
-		case SN6040_REVISION_ID:
-		case SN6040_UM_INTERRUPT_CRTL:
-		case SN6040_DIGITAL_TEST11:
-		case SN6040_PORTA_PIN_SENSE:
-		case SN6040_PORTB_PIN_SENSE:
-		case SN6040_PORTC_PIN_SENSE:
-		case SN6040_PORTD_PIN_SENSE:
-		case SN6040_AFG_GPIO_DATA:
-		case SN6040_EQ_BAND_CONTROL:
-			return true;
-		default:
-			return false;
+	switch (reg) {
+	case SN6040_VENDOR_ID:
+	case SN6040_REVISION_ID:
+	case SN6040_UM_INTERRUPT_CRTL:
+	case SN6040_DIGITAL_TEST11:
+	case SN6040_PORTA_PIN_SENSE:
+	case SN6040_PORTB_PIN_SENSE:
+	case SN6040_PORTC_PIN_SENSE:
+	case SN6040_PORTD_PIN_SENSE:
+	case SN6040_AFG_GPIO_DATA:
+	case SN6040_EQ_BAND_CONTROL:
+		return true;
+	default:
+		return false;
 	}
 }
 
 /* reg raw write */
-static int sn6040_reg_raw_write(struct i2c_client *client,
-				 unsigned int reg,
-				 const void *val, size_t val_count)
+static int sn6040_reg_raw_write(struct i2c_client *client, unsigned int reg,
+				const void *val, size_t val_count)
 {
 	struct device *dev = &client->dev;
 	u8 buf[2 + SN6040_MAX_EQ_COEFF];
@@ -405,22 +395,20 @@ static int sn6040_reg_raw_write(struct i2c_client *client,
 }
 
 /* reg write */
-static int sn6040_reg_write(void *context, unsigned int reg,
-			     unsigned int value)
+static int sn6040_reg_write(void *context, unsigned int reg, unsigned int value)
 {
 	__le32 raw_value;
 	unsigned int size;
 
 	size = sn6040_register_size(reg);
 
-	printk("+reg_write:reg=0x%x;size=%d;reg_val=0x%x+",reg,size,value);
+	printk("+reg_write:reg=0x%x;size=%d;reg_val=0x%x+", reg, size, value);
 	raw_value = cpu_to_le32(value);
 	return sn6040_reg_raw_write(context, reg, &raw_value, size);
 }
 
 /* reg read */
-static int sn6040_reg_read(void *context, unsigned int reg,
-			    unsigned int *value)
+static int sn6040_reg_read(void *context, unsigned int reg, unsigned int *value)
 {
 	struct i2c_client *client = context;
 	struct device *dev = &client->dev;
@@ -514,19 +502,20 @@ static int sn6040_config_pll(struct sn6040_priv *sn6040)
 		return -EINVAL;
 	}
 
-	regmap_read(sn6040->regmap, SN6040_DIGITAL_BIOS_TEST2_LSB, &regdbtl_val);
+	regmap_read(sn6040->regmap, SN6040_DIGITAL_BIOS_TEST2_LSB,
+		    &regdbtl_val);
 
 	/* Configure PLL settings */
-	if( regdbtl_val & 0x40 ){  //BCLK as reference clock
+	if (regdbtl_val & 0x40) { //BCLK as reference clock
 		printk("+1+bclk_ratio:%d+\n", bclk_ratio);
-		if( bclk_ratio == 0){
+		if (bclk_ratio == 0) {
 			bclk_ratio = sn6040->frame_size;
 		}
 		bclk_rate = sample_rate * bclk_ratio;
 		printk("+bclk_rate:%d+\n", bclk_rate);
-		pre_div =  get_div_from_mclk(bclk_rate);
+		pre_div = get_div_from_mclk(bclk_rate);
 		pll_input = bclk_rate / pre_div;
-	} else {  //MCLK as reference clock
+	} else { //MCLK as reference clock
 		pre_div = get_div_from_mclk(sn6040->mclk_rate);
 		pll_input = sn6040->mclk_rate / pre_div;
 	}
@@ -543,16 +532,14 @@ static int sn6040_config_pll(struct sn6040_priv *sn6040)
 	}
 	pre_div_val = (pre_div - 1) * 2;
 
-	regmap_write(sn6040->regmap, SN6040_ANALOG_TEST4,
-		     (pre_div_val << 8));
+	regmap_write(sn6040->regmap, SN6040_ANALOG_TEST4, (pre_div_val << 8));
 	if (frac_div == 0) {
 		/* Int mode */
 		regmap_write(sn6040->regmap, SN6040_ANALOG_TEST6, 0x000);
 		regmap_write(sn6040->regmap, SN6040_ANALOG_TEST7, 0x100);
 	} else {
 		/* frac mode */
-		regmap_write(sn6040->regmap, SN6040_ANALOG_TEST6,
-			     frac & 0xfff);
+		regmap_write(sn6040->regmap, SN6040_ANALOG_TEST6, frac & 0xfff);
 		regmap_write(sn6040->regmap, SN6040_ANALOG_TEST7,
 			     (u8)(frac >> 12));
 	}
@@ -624,14 +611,14 @@ static int sn6040_config_i2spcm(struct sn6040_priv *sn6040)
 
 	/* set master/slave */
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBM_CFM:
+	case SND_SOC_DAIFMT_CBP_CFP:
 		reg2.r.tx_master = 1;
 		reg3.r.rx_master = 1;
 		dev_dbg(dev, "Sets Master mode\n");
 		printk("+Sets Master mode+\n");
 		break;
 
-	case SND_SOC_DAIFMT_CBS_CFS:
+	case SND_SOC_DAIFMT_CBC_CFC:
 		reg2.r.tx_master = 0;
 		reg3.r.rx_master = 0;
 		dev_dbg(dev, "Sets Slave mode\n");
@@ -781,8 +768,7 @@ static int sn6040_config_i2spcm(struct sn6040_priv *sn6040)
 	regmap_write(sn6040->regmap, SN6040_I2SPCM_CONTROL6, reg6.ulval);
 	regmap_write(sn6040->regmap, SN6040_I2SPCM_CONTROL5, reg5.ulval);
 
-	regmap_write(sn6040->regmap, SN6040_DIGITAL_BIOS_TEST2,
-		     regdbt2.ulval);
+	regmap_write(sn6040->regmap, SN6040_DIGITAL_BIOS_TEST2, regdbt2.ulval);
 
 	return 0;
 }
@@ -796,13 +782,13 @@ static int afg_power_ev(struct snd_soc_dapm_widget *w,
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
-		regmap_update_bits(sn6040->regmap, SN6040_DIGITAL_BIOS_TEST0_LSB,
-				   0x10, 0x00);
+		regmap_update_bits(sn6040->regmap,
+				   SN6040_DIGITAL_BIOS_TEST0_LSB, 0x10, 0x00);
 		break;
 
 	case SND_SOC_DAPM_PRE_PMD:
-		regmap_update_bits(sn6040->regmap, SN6040_DIGITAL_BIOS_TEST0_LSB,
-				   0x10, 0x10);
+		regmap_update_bits(sn6040->regmap,
+				   SN6040_DIGITAL_BIOS_TEST0_LSB, 0x10, 0x10);
 		break;
 	}
 
@@ -826,7 +812,7 @@ static const struct snd_kcontrol_new sn6040_snd_controls[] = {
 	SOC_DOUBLE_R_TLV("DAC1 Volume", SN6040_DAC1_AMP_GAIN_LEFT,
 			 SN6040_DAC1_AMP_GAIN_RIGHT, 0, 0x4a, 0, dac_tlv),
 	SOC_DOUBLE_R("DAC1 Switch", SN6040_DAC1_AMP_GAIN_LEFT,
-		     SN6040_DAC1_AMP_GAIN_RIGHT, 7,  1, 0),
+		     SN6040_DAC1_AMP_GAIN_RIGHT, 7, 1, 0),
 	SOC_DOUBLE_R_TLV("DAC2 Volume", SN6040_DAC2_AMP_GAIN_LEFT,
 			 SN6040_DAC2_AMP_GAIN_RIGHT, 0, 0x4a, 0, dac_tlv),
 	SOC_SINGLE("PortA HP Amp Switch", SN6040_PORTA_PIN_CTRL, 7, 1, 0),
@@ -909,13 +895,13 @@ static int sn6040_set_portD(struct snd_soc_component *codec)
 	// regmap_write(sn6040->regmap, SN6040_PORTD_AMP_GAIN_LEFT, 0x03);
 	regmap_write(sn6040->regmap, SN6040_PORTD_POWER_STATE, 0x00);
 	regmap_write(sn6040->regmap, SN6040_PORTD_PIN_CTRL, 0x21);
-	
+
 	return 0;
 }
 
 static int sn6040_hw_params(struct snd_pcm_substream *substream,
-			     struct snd_pcm_hw_params *params,
-			     struct snd_soc_dai *dai)
+			    struct snd_pcm_hw_params *params,
+			    struct snd_soc_dai *dai)
 {
 	//TODO
 	struct snd_soc_component *codec = dai->component;
@@ -932,16 +918,14 @@ static int sn6040_hw_params(struct snd_pcm_substream *substream,
 		return sample_size;
 
 	frame_size = snd_soc_params_to_frame_size(params);
-	if (frame_size < 0){
+	if (frame_size < 0) {
 		return frame_size;
-	}else if (frame_size <= 32)
-	{
+	} else if (frame_size <= 32) {
 		frame_size = 32;
-	}else if (frame_size > 32 && frame_size <=64)
-	{
+	} else if (frame_size > 32 && frame_size <= 64) {
 		frame_size = 64;
 	}
-	
+
 	//frame_size = 64;
 
 	if (sn6040->mclk_rate == 0) {
@@ -949,7 +933,7 @@ static int sn6040_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	if (sn6040->bclk_ratio){
+	if (sn6040->bclk_ratio) {
 		printk("+bclk_ratio:%d+\n", sn6040->bclk_ratio);
 		frame_size = sn6040->bclk_ratio;
 	}
@@ -972,38 +956,38 @@ static int sn6040_hw_params(struct snd_pcm_substream *substream,
 	dev_dbg(dev, "Sample size %d bits, frame = %d bits, rate = %d Hz\n",
 		sample_size, frame_size, sample_rate);
 	printk("+senary hw param+Sample size %d bits, frame = %d bits, rate = %d Hz\n",
-		sample_size, frame_size, sample_rate);
+	       sample_size, frame_size, sample_rate);
 
 	sn6040->frame_size = frame_size;
 	sn6040->sample_size = sample_size;
 	sn6040->sample_rate = sample_rate;
 
 	// if (sn6040->pll_changed) {
-		printk("+set pll+\n");
-		ret = sn6040_config_pll(sn6040);
-		// if(ret){
-		// 	printk("+set pll failed, reset pll+\n");
-		// 	regmap_write(sn6040->regmap, SN6040_ANALOG_TEST4, 0x000);
-		// 	regmap_write(sn6040->regmap, SN6040_ANALOG_TEST5, 0x000);
-		// 	regmap_write(sn6040->regmap, SN6040_ANALOG_TEST6, 0xBF8);
-		// 	regmap_write(sn6040->regmap, SN6040_ANALOG_TEST7, 0x193);
-		// 	regmap_write(sn6040->regmap, SN6040_ANALOG_TEST8, 0x02F);
-		// }
-		// sn6040->pll_changed = false;
+	printk("+set pll+\n");
+	ret = sn6040_config_pll(sn6040);
+	// if(ret){
+	// 	printk("+set pll failed, reset pll+\n");
+	// 	regmap_write(sn6040->regmap, SN6040_ANALOG_TEST4, 0x000);
+	// 	regmap_write(sn6040->regmap, SN6040_ANALOG_TEST5, 0x000);
+	// 	regmap_write(sn6040->regmap, SN6040_ANALOG_TEST6, 0xBF8);
+	// 	regmap_write(sn6040->regmap, SN6040_ANALOG_TEST7, 0x193);
+	// 	regmap_write(sn6040->regmap, SN6040_ANALOG_TEST8, 0x02F);
+	// }
+	// sn6040->pll_changed = false;
 	// }
 
 	// if (sn6040->i2spcm_changed) {
-		// if(sample_rate == 44100){
-		// 	printk("+set i2spcm as 48k default as sample rate is %d+\n", sample_rate);
-		// 	regmap_write(sn6040->regmap, SN6040_DIGITAL_BIOS_TEST2_MSB, 0x01);
-		// 	regmap_write(sn6040->regmap, SN6040_DIGITAL_BIOS_TEST2_LSB, 0xEC);
-		// 	regmap_write(sn6040->regmap, SN6040_I2SPCM_CONTROL1, 0x8E7F8E7F);
-		// 	regmap_write(sn6040->regmap, SN6040_I2SPCM_CONTROL2, 0xA8002003);
-		// 	regmap_write(sn6040->regmap, SN6040_I2SPCM_CONTROL3, 0x88002003);
-		// }else{
-			printk("+set i2spcm dynamic+\n");
-			sn6040_config_i2spcm(sn6040);
-		// }
+	// if(sample_rate == 44100){
+	// 	printk("+set i2spcm as 48k default as sample rate is %d+\n", sample_rate);
+	// 	regmap_write(sn6040->regmap, SN6040_DIGITAL_BIOS_TEST2_MSB, 0x01);
+	// 	regmap_write(sn6040->regmap, SN6040_DIGITAL_BIOS_TEST2_LSB, 0xEC);
+	// 	regmap_write(sn6040->regmap, SN6040_I2SPCM_CONTROL1, 0x8E7F8E7F);
+	// 	regmap_write(sn6040->regmap, SN6040_I2SPCM_CONTROL2, 0xA8002003);
+	// 	regmap_write(sn6040->regmap, SN6040_I2SPCM_CONTROL3, 0x88002003);
+	// }else{
+	printk("+set i2spcm dynamic+\n");
+	sn6040_config_i2spcm(sn6040);
+	// }
 	// 	sn6040->i2spcm_changed = false;
 	// }
 
@@ -1014,7 +998,7 @@ static int sn6040_hw_params(struct snd_pcm_substream *substream,
 }
 
 static int sn6040_set_dai_bclk_ratio(struct snd_soc_dai *dai,
-				      unsigned int ratio)
+				     unsigned int ratio)
 {
 	struct snd_soc_component *codec = dai->component;
 	struct sn6040_priv *sn6040 = snd_soc_component_get_drvdata(codec);
@@ -1024,7 +1008,7 @@ static int sn6040_set_dai_bclk_ratio(struct snd_soc_dai *dai,
 }
 
 static int sn6040_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
-				  unsigned int freq, int dir)
+				 unsigned int freq, int dir)
 {
 	struct snd_soc_component *codec = dai->component;
 	struct sn6040_priv *sn6040 = snd_soc_component_get_drvdata(codec);
@@ -1048,8 +1032,8 @@ static int sn6040_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 	printk("+set_dai_fmt- %08x+\n", fmt);
 	/* set master/slave */
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBM_CFM:
-	case SND_SOC_DAIFMT_CBS_CFS:
+	case SND_SOC_DAIFMT_CBP_CFP:
+	case SND_SOC_DAIFMT_CBC_CFC:
 		break;
 
 	default:
@@ -1090,13 +1074,13 @@ static int sn6040_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 //TODO
 static const struct snd_kcontrol_new portaouten_ctl =
 	SOC_DAPM_SINGLE("Switch", SN6040_PORTA_PIN_CTRL, 6, 1, 0);
-	
+
 static const struct snd_kcontrol_new portgouten_ctl =
 	SOC_DAPM_SINGLE("Switch", SN6040_PORTG_PIN_CTRL, 6, 1, 0);
-	
+
 static const struct snd_kcontrol_new portiouten_ctl =
 	SOC_DAPM_SINGLE("Switch", SN6040_PORTI_PIN_CTRL, 6, 1, 0);
-	
+
 static const struct snd_kcontrol_new portbinen_ctl =
 	SOC_DAPM_SINGLE("Switch", SN6040_PORTB_PIN_CTRL, 5, 1, 0);
 
@@ -1105,7 +1089,7 @@ static const struct snd_kcontrol_new portcinen_ctl =
 
 static const struct snd_kcontrol_new portdinen_ctl =
 	SOC_DAPM_SINGLE("Switch", SN6040_PORTD_PIN_CTRL, 5, 1, 0);
-	
+
 static const struct snd_kcontrol_new i2sadc1l_ctl =
 	SOC_DAPM_SINGLE("Switch", SN6040_I2SPCM_CONTROL2, 0, 1, 0);
 
@@ -1136,41 +1120,46 @@ static const struct snd_kcontrol_new i2sdac3l_ctl =
 static const struct snd_kcontrol_new i2sdac3r_ctl =
 	SOC_DAPM_SINGLE("Switch", SN6040_I2SPCM_CONTROL3, 5, 1, 0);
 
-static const char * const dac_enum_text[] = {
-	"DAC1 Switch", "DAC2 Switch",
+static const char *const dac_enum_text[] = {
+	"DAC1 Switch",
+	"DAC2 Switch",
 };
 
 static const struct soc_enum porta_dac_enum =
-SOC_ENUM_SINGLE(SN6040_PORTA_CONNECTION_SELECT, 0, 2, dac_enum_text);
+	SOC_ENUM_SINGLE(SN6040_PORTA_CONNECTION_SELECT, 0, 2, dac_enum_text);
 
 static const struct snd_kcontrol_new porta_mux =
-SOC_DAPM_ENUM("PortA Mux", porta_dac_enum);
+	SOC_DAPM_ENUM("PortA Mux", porta_dac_enum);
 
 static const struct soc_enum portg_dac_enum =
-SOC_ENUM_SINGLE(SN6040_PORTG_CONNECTION_SELECT, 0, 2, dac_enum_text);
+	SOC_ENUM_SINGLE(SN6040_PORTG_CONNECTION_SELECT, 0, 2, dac_enum_text);
 
 static const struct snd_kcontrol_new portg_mux =
-SOC_DAPM_ENUM("PortG Mux", portg_dac_enum);
+	SOC_DAPM_ENUM("PortG Mux", portg_dac_enum);
 
-static const char * const adc1in_sel_text[] = {
-	"PortB Switch", "PortD Switch", "PortC Switch", "Widget15 Switch",
+static const char *const adc1in_sel_text[] = {
+	"PortB Switch",
+	"PortD Switch",
+	"PortC Switch",
+	"Widget15 Switch",
 };
 
 static const struct soc_enum adc1in_sel_enum =
-SOC_ENUM_SINGLE(SN6040_ADC1_CONNECTION_SELECT, 0, 4, adc1in_sel_text);
+	SOC_ENUM_SINGLE(SN6040_ADC1_CONNECTION_SELECT, 0, 4, adc1in_sel_text);
 
 static const struct snd_kcontrol_new adc1_mux =
-SOC_DAPM_ENUM("ADC1 Mux", adc1in_sel_enum);
+	SOC_DAPM_ENUM("ADC1 Mux", adc1in_sel_enum);
 
-static const char * const adc2in_sel_text[] = {
-	"PortC Switch", "Widget15 Switch",
+static const char *const adc2in_sel_text[] = {
+	"PortC Switch",
+	"Widget15 Switch",
 };
 
 static const struct soc_enum adc2in_sel_enum =
-SOC_ENUM_SINGLE(SN6040_ADC2_CONNECTION_SELECT, 0, 2, adc2in_sel_text);
+	SOC_ENUM_SINGLE(SN6040_ADC2_CONNECTION_SELECT, 0, 2, adc2in_sel_text);
 
 static const struct snd_kcontrol_new adc2_mux =
-SOC_DAPM_ENUM("ADC2 Mux", adc2in_sel_enum);
+	SOC_DAPM_ENUM("ADC2 Mux", adc2in_sel_enum);
 
 static const struct snd_kcontrol_new wid15_mix[] = {
 	SOC_DAPM_SINGLE("DAC1L Switch", SN6040_MIXER_AMP_GAIN_LEFT_0, 7, 1, 1),
@@ -1185,12 +1174,20 @@ static const struct snd_kcontrol_new wid15_mix[] = {
 // 	SOC_DAPM_PIN_SWITCH("Headset Mic"),
 // };
 
-#define SN6040_DAPM_SUPPLY_S(wname, wsubseq, wreg, wshift, wmask,  won_val, \
-	woff_val, wevent, wflags) \
-	{.id = snd_soc_dapm_supply, .name = wname, .kcontrol_news = NULL, \
-	.num_kcontrols = 0, .reg = wreg, .shift = wshift, .mask = wmask, \
-	.on_val = won_val, .off_val = woff_val, \
-	.subseq = wsubseq, .event = wevent, .event_flags = wflags}
+#define SN6040_DAPM_SUPPLY_S(wname, wsubseq, wreg, wshift, wmask, won_val, \
+			     woff_val, wevent, wflags)                     \
+	{ .id = snd_soc_dapm_supply,                                       \
+	  .name = wname,                                                   \
+	  .kcontrol_news = NULL,                                           \
+	  .num_kcontrols = 0,                                              \
+	  .reg = wreg,                                                     \
+	  .shift = wshift,                                                 \
+	  .mask = wmask,                                                   \
+	  .on_val = won_val,                                               \
+	  .off_val = woff_val,                                             \
+	  .subseq = wsubseq,                                               \
+	  .event = wevent,                                                 \
+	  .event_flags = wflags }
 
 /* dapm widgets */
 static const struct snd_soc_dapm_widget sn6040_dapm_widgets[] = {
@@ -1205,14 +1202,14 @@ static const struct snd_soc_dapm_widget sn6040_dapm_widgets[] = {
 	SND_SOC_DAPM_SWITCH("I2S DAC3L", SND_SOC_NOPM, 0, 0, &i2sdac3l_ctl),
 	SND_SOC_DAPM_SWITCH("I2S DAC3R", SND_SOC_NOPM, 0, 0, &i2sdac3r_ctl),
 
-	SND_SOC_DAPM_REG(snd_soc_dapm_dac, "DAC1", SN6040_DAC1_POWER_STATE,
-			 0, 0xfff, 0x00, 0x03),
+	SND_SOC_DAPM_REG(snd_soc_dapm_dac, "DAC1", SN6040_DAC1_POWER_STATE, 0,
+			 0xfff, 0x00, 0x03),
 
-	SND_SOC_DAPM_REG(snd_soc_dapm_dac, "DAC2", SN6040_DAC2_POWER_STATE,
-			 0, 0xfff, 0x00, 0x03),
+	SND_SOC_DAPM_REG(snd_soc_dapm_dac, "DAC2", SN6040_DAC2_POWER_STATE, 0,
+			 0xfff, 0x00, 0x03),
 
-	SND_SOC_DAPM_REG(snd_soc_dapm_dac, "DAC3", SN6040_DAC3_POWER_STATE,
-			 0, 0xfff, 0x00, 0x03),
+	SND_SOC_DAPM_REG(snd_soc_dapm_dac, "DAC3", SN6040_DAC3_POWER_STATE, 0,
+			 0xfff, 0x00, 0x03),
 
 	SND_SOC_DAPM_MUX("PortA Mux", SND_SOC_NOPM, 0, 0, &porta_mux),
 	SND_SOC_DAPM_MUX("PortG Mux", SND_SOC_NOPM, 0, 0, &portg_mux),
@@ -1224,11 +1221,11 @@ static const struct snd_soc_dapm_widget sn6040_dapm_widgets[] = {
 			 SN6040_PORTG_POWER_STATE, 0, 0xfff, 0x00, 0x03),
 
 	SND_SOC_DAPM_REG(snd_soc_dapm_supply, "PortI Power",
-			SN6040_PORTI_POWER_STATE, 0, 0xfff, 0x00, 0x03),
+			 SN6040_PORTI_POWER_STATE, 0, 0xfff, 0x00, 0x03),
 
-	SN6040_DAPM_SUPPLY_S("AFG Power", 0, SN6040_AFG_POWER_STATE,
-			      0, 0xfff, 0x00, 0x03, afg_power_ev,
-			      SND_SOC_DAPM_POST_PMU | SND_SOC_DAPM_PRE_PMD),
+	SN6040_DAPM_SUPPLY_S("AFG Power", 0, SN6040_AFG_POWER_STATE, 0, 0xfff,
+			     0x00, 0x03, afg_power_ev,
+			     SND_SOC_DAPM_POST_PMU | SND_SOC_DAPM_PRE_PMD),
 
 	SND_SOC_DAPM_SWITCH("PortA Out En", SND_SOC_NOPM, 0, 0,
 			    &portaouten_ctl),
@@ -1249,10 +1246,10 @@ static const struct snd_soc_dapm_widget sn6040_dapm_widgets[] = {
 	SND_SOC_DAPM_SWITCH("I2S ADC2L", SND_SOC_NOPM, 0, 0, &i2sadc2l_ctl),
 	SND_SOC_DAPM_SWITCH("I2S ADC2R", SND_SOC_NOPM, 0, 0, &i2sadc2r_ctl),
 
-	SND_SOC_DAPM_REG(snd_soc_dapm_adc, "ADC1", SN6040_ADC1_POWER_STATE,
-			 0, 0xff, 0x00, 0x03),
-	SND_SOC_DAPM_REG(snd_soc_dapm_adc, "ADC2", SN6040_ADC2_POWER_STATE,
-			 0, 0xff, 0x00, 0x03),
+	SND_SOC_DAPM_REG(snd_soc_dapm_adc, "ADC1", SN6040_ADC1_POWER_STATE, 0,
+			 0xff, 0x00, 0x03),
+	SND_SOC_DAPM_REG(snd_soc_dapm_adc, "ADC2", SN6040_ADC2_POWER_STATE, 0,
+			 0xff, 0x00, 0x03),
 
 	SND_SOC_DAPM_MUX("ADC1 Mux", SND_SOC_NOPM, 0, 0, &adc1_mux),
 	SND_SOC_DAPM_MUX("ADC2 Mux", SND_SOC_NOPM, 0, 0, &adc2_mux),
@@ -1266,8 +1263,8 @@ static const struct snd_soc_dapm_widget sn6040_dapm_widgets[] = {
 	SND_SOC_DAPM_REG(snd_soc_dapm_supply, "Widget15 Power",
 			 SN6040_MIXER_POWER_STATE, 0, 0xfff, 0x00, 0x03),
 
-	SND_SOC_DAPM_MIXER("Widget15 Mixer", SND_SOC_NOPM, 0, 0,
-			   wid15_mix, ARRAY_SIZE(wid15_mix)),
+	SND_SOC_DAPM_MIXER("Widget15 Mixer", SND_SOC_NOPM, 0, 0, wid15_mix,
+			   ARRAY_SIZE(wid15_mix)),
 	SND_SOC_DAPM_SWITCH("PortB In En", SND_SOC_NOPM, 0, 0, &portbinen_ctl),
 	SND_SOC_DAPM_SWITCH("PortC In En", SND_SOC_NOPM, 0, 0, &portcinen_ctl),
 	SND_SOC_DAPM_SWITCH("PortD In En", SND_SOC_NOPM, 0, 0, &portdinen_ctl),
@@ -1289,66 +1286,66 @@ static const struct snd_soc_dapm_widget sn6040_dapm_widgets[] = {
 static const struct snd_soc_dapm_route sn6040_intercon[] = {
 	//TODO
 	/* Playback */
-	{"In AIF", NULL, "AFG Power"},
-	{"I2S DAC1L", "Switch", "In AIF"},
-	{"I2S DAC1R", "Switch", "In AIF"},
-	{"I2S DAC2L", "Switch", "In AIF"},
-	{"I2S DAC2R", "Switch", "In AIF"},
-	{"I2S DAC3L", "Switch", "In AIF"},
-	{"I2S DAC3R", "Switch", "In AIF"},
-	{"DAC1", NULL, "I2S DAC1L"},
-	{"DAC1", NULL, "I2S DAC1R"},
-	{"DAC2", NULL, "I2S DAC2L"},
-	{"DAC2", NULL, "I2S DAC2R"},
-	{"DAC3", NULL, "I2S DAC3L"},
-	{"DAC3", NULL, "I2S DAC3R"},
-	{"PortA Mux", "DAC1 Switch", "DAC1"},
-	{"PortA Mux", "DAC2 Switch", "DAC2"},
-	{"PortG Mux", "DAC1 Switch", "DAC1"},
-	{"PortG Mux", "DAC2 Switch", "DAC2"},
-	{"Widget15 Mixer", "DAC1L Switch", "DAC1"},
-	{"Widget15 Mixer", "DAC1R Switch", "DAC2"},
-	{"Widget15 Mixer", "DAC2L Switch", "DAC1"},
-	{"Widget15 Mixer", "DAC2R Switch", "DAC2"},
-	{"Widget15 Mixer", NULL, "Widget15 Power"},
-	{"PortA Out En", "Switch", "PortA Mux"},
-	{"PortG Out En", "Switch", "PortG Mux"},
-	{"PortI Out En", "Switch", "DAC3"},
-	{"PortA Mux", NULL, "PortA Power"},
-	{"PortG Mux", NULL, "PortG Power"},
-	{"PortA Out En", NULL, "PortA Power"},
-	{"PortG Out En", NULL, "PortG Power"},
-	{"PortI Out En", NULL, "PortI Power"},
-	{"PORTA", NULL, "PortA Out En"},
-	{"PORTG", NULL, "PortG Out En"},
-	{"PORTI", NULL, "PortI Out En"},
+	{ "In AIF", NULL, "AFG Power" },
+	{ "I2S DAC1L", "Switch", "In AIF" },
+	{ "I2S DAC1R", "Switch", "In AIF" },
+	{ "I2S DAC2L", "Switch", "In AIF" },
+	{ "I2S DAC2R", "Switch", "In AIF" },
+	{ "I2S DAC3L", "Switch", "In AIF" },
+	{ "I2S DAC3R", "Switch", "In AIF" },
+	{ "DAC1", NULL, "I2S DAC1L" },
+	{ "DAC1", NULL, "I2S DAC1R" },
+	{ "DAC2", NULL, "I2S DAC2L" },
+	{ "DAC2", NULL, "I2S DAC2R" },
+	{ "DAC3", NULL, "I2S DAC3L" },
+	{ "DAC3", NULL, "I2S DAC3R" },
+	{ "PortA Mux", "DAC1 Switch", "DAC1" },
+	{ "PortA Mux", "DAC2 Switch", "DAC2" },
+	{ "PortG Mux", "DAC1 Switch", "DAC1" },
+	{ "PortG Mux", "DAC2 Switch", "DAC2" },
+	{ "Widget15 Mixer", "DAC1L Switch", "DAC1" },
+	{ "Widget15 Mixer", "DAC1R Switch", "DAC2" },
+	{ "Widget15 Mixer", "DAC2L Switch", "DAC1" },
+	{ "Widget15 Mixer", "DAC2R Switch", "DAC2" },
+	{ "Widget15 Mixer", NULL, "Widget15 Power" },
+	{ "PortA Out En", "Switch", "PortA Mux" },
+	{ "PortG Out En", "Switch", "PortG Mux" },
+	{ "PortI Out En", "Switch", "DAC3" },
+	{ "PortA Mux", NULL, "PortA Power" },
+	{ "PortG Mux", NULL, "PortG Power" },
+	{ "PortA Out En", NULL, "PortA Power" },
+	{ "PortG Out En", NULL, "PortG Power" },
+	{ "PortI Out En", NULL, "PortI Power" },
+	{ "PORTA", NULL, "PortA Out En" },
+	{ "PORTG", NULL, "PortG Out En" },
+	{ "PORTI", NULL, "PortI Out En" },
 
 	/* Capture */
-	{"PORTD", NULL, "Headset Bias"},
-	{"PortB In En", "Switch", "PORTB"},
-	{"PortC In En", "Switch", "PORTC"},
-	{"PortD In En", "Switch", "PORTD"},
-	{"ADC1 Mux", "PortB Switch", "PortB In En"},
-	{"ADC1 Mux", "PortC Switch", "PortC In En"},
-	{"ADC1 Mux", "PortD Switch", "PortD In En"},
-	{"ADC1 Mux", "Widget15 Switch", "Widget15 Mixer"},
-	{"ADC2 Mux", "PortC Switch", "PortC In En"},
-	{"ADC2 Mux", "Widget15 Switch", "Widget15 Mixer"},
-	{"ADC1", NULL, "ADC1 Mux"},
-	{"ADC2", NULL, "ADC2 Mux"},
-	{"I2S ADC1L", "Switch", "ADC1"},
-	{"I2S ADC1R", "Switch", "ADC1"},
-	{"I2S ADC2L", "Switch", "ADC2"},
-	{"I2S ADC2R", "Switch", "ADC2"},
-	{"Out AIF", NULL, "I2S ADC1L"},
-	{"Out AIF", NULL, "I2S ADC1R"},
-	{"Out AIF", NULL, "I2S ADC2L"},
-	{"Out AIF", NULL, "I2S ADC2R"},
-	{"Out AIF", NULL, "AFG Power"},
-	{"AEC REF", NULL, "Out AIF"},
-	{"PortB In En", NULL, "PortB Power"},
-	{"PortC In En", NULL, "PortC Power"},
-	{"PortD In En", NULL, "PortD Power"},
+	{ "PORTD", NULL, "Headset Bias" },
+	{ "PortB In En", "Switch", "PORTB" },
+	{ "PortC In En", "Switch", "PORTC" },
+	{ "PortD In En", "Switch", "PORTD" },
+	{ "ADC1 Mux", "PortB Switch", "PortB In En" },
+	{ "ADC1 Mux", "PortC Switch", "PortC In En" },
+	{ "ADC1 Mux", "PortD Switch", "PortD In En" },
+	{ "ADC1 Mux", "Widget15 Switch", "Widget15 Mixer" },
+	{ "ADC2 Mux", "PortC Switch", "PortC In En" },
+	{ "ADC2 Mux", "Widget15 Switch", "Widget15 Mixer" },
+	{ "ADC1", NULL, "ADC1 Mux" },
+	{ "ADC2", NULL, "ADC2 Mux" },
+	{ "I2S ADC1L", "Switch", "ADC1" },
+	{ "I2S ADC1R", "Switch", "ADC1" },
+	{ "I2S ADC2L", "Switch", "ADC2" },
+	{ "I2S ADC2R", "Switch", "ADC2" },
+	{ "Out AIF", NULL, "I2S ADC1L" },
+	{ "Out AIF", NULL, "I2S ADC1R" },
+	{ "Out AIF", NULL, "I2S ADC2L" },
+	{ "Out AIF", NULL, "I2S ADC2R" },
+	{ "Out AIF", NULL, "AFG Power" },
+	{ "AEC REF", NULL, "Out AIF" },
+	{ "PortB In En", NULL, "PortB Power" },
+	{ "PortC In En", NULL, "PortC Power" },
+	{ "PortD In En", NULL, "PortD Power" },
 
 	/* Extern jack device, should set in machine driver */
 	// {"Headphone", NULL, "PORTA"},
@@ -1356,12 +1353,13 @@ static const struct snd_soc_dapm_route sn6040_intercon[] = {
 };
 
 static int sn6040_set_bias_level(struct snd_soc_component *codec,
-				  enum snd_soc_bias_level level)
+				 enum snd_soc_bias_level level)
 {
 	//TODO
 	struct sn6040_priv *sn6040 = snd_soc_component_get_drvdata(codec);
+	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(codec);
 	const enum snd_soc_bias_level old_level =
-		snd_soc_component_get_bias_level(codec);
+		snd_soc_dapm_get_bias_level(dapm);
 
 	if (level == SND_SOC_BIAS_STANDBY && old_level == SND_SOC_BIAS_OFF)
 		regmap_write(sn6040->regmap, SN6040_AFG_POWER_STATE, 0);
@@ -1376,7 +1374,7 @@ static int sn6040_set_bias_level(struct snd_soc_component *codec,
 // {
 // 	//TODO
 // 	struct sn6040_priv *sn6040 = snd_soc_component_get_drvdata(codec);
-// 	struct snd_soc_dapm_context *dapm = snd_soc_component_get_dapm(codec);
+// 	struct snd_soc_dapm_context *dapm = snd_soc_component_to_dapm(codec);
 
 // 	/* No-sticky input type */
 // 	regmap_write(sn6040->regmap, SN6040_AFG_GPIO_STICKY_MASK, 0x1f);
@@ -1506,10 +1504,11 @@ static int por_toI2Sinterface(struct snd_soc_component *codec)
 	regmap_write(sn6040->regmap, SN6040_CODEC_TEST25, 0x555);
 	regmap_write(sn6040->regmap, SN6040_DIGITAL_TEST2, 0x001);
 	mdelay(10);
-	do{
-		ret = regmap_write(sn6040->regmap, SN6040_DIGITAL_BIOS_TEST3_MSB, 0x03);
+	do {
+		ret = regmap_write(sn6040->regmap,
+				   SN6040_DIGITAL_BIOS_TEST3_MSB, 0x03);
 		cnt++;
-	}while((ret<0) &&(cnt<5));
+	} while ((ret < 0) && (cnt < 5));
 	printk("+i2s mode set, ret:0x%d, cnt:0x%d+", ret, cnt);
 	// regmap_write(sn6040->regmap, SN6040_DIGITAL_BIOS_TEST3_MSB, 0x03);
 	return 0;
@@ -1535,19 +1534,19 @@ static int sn6040_probe(struct snd_soc_component *codec)
 	struct sn6040_priv *sn6040 = snd_soc_component_get_drvdata(codec);
 	// int reg, reg_val;
 	// struct snd_soc_card *card = codec->card;
-//int ret;
+	//int ret;
 	printk("+sn6040_probe+\n");
-// 	sn6040->codec = codec;
+	// 	sn6040->codec = codec;
 
-// 	ret = snd_soc_card_jack_new(card, "Headset",
-// 				    SND_JACK_HEADSET,
-// 				    &sn6040_headset,
-// 				    sn6040_headset_pins,
-// 				    ARRAY_SIZE(sn6040_headset_pins));
-// 	if (ret){
-// 		printk("+create jack error+");
-// 		return ret;
-// 	}
+	// 	ret = snd_soc_card_jack_new(card, "Headset",
+	// 				    SND_JACK_HEADSET,
+	// 				    &sn6040_headset,
+	// 				    sn6040_headset_pins,
+	// 				    ARRAY_SIZE(sn6040_headset_pins));
+	// 	if (ret){
+	// 		printk("+create jack error+");
+	// 		return ret;
+	// 	}
 
 	// snd_soc_component_set_jack(codec, &sn6040_headset, NULL);
 	/*
@@ -1590,7 +1589,6 @@ static int sn6040_probe(struct snd_soc_component *codec)
 	// 		printk("reg:%x\treg_val:%x", reg, reg_val);
 	// 	}
 	// }
-
 
 	// regmap_write(sn6040->regmap, SN6040_AFG_POWER_STATE, 3);
 	// pm_runtime_put(codec->dev);
@@ -1692,13 +1690,12 @@ static int sn6040_i2c_probe(struct i2c_client *i2c)
 	unsigned int ven_id, rev_id;
 	int ret;
 	printk("+sn6040_i2c_probe+");
-	sn6040 = devm_kzalloc(&i2c->dev, sizeof(struct sn6040_priv),
-			       GFP_KERNEL);
+	sn6040 =
+		devm_kzalloc(&i2c->dev, sizeof(struct sn6040_priv), GFP_KERNEL);
 	if (!sn6040)
 		return -ENOMEM;
 
-	sn6040->regmap = devm_regmap_init(&i2c->dev, NULL, i2c,
-					   &sn6040_regmap);
+	sn6040->regmap = devm_regmap_init(&i2c->dev, NULL, i2c, &sn6040_regmap);
 	if (IS_ERR(sn6040->regmap))
 		return PTR_ERR(sn6040->regmap);
 
@@ -1726,7 +1723,7 @@ static int sn6040_i2c_probe(struct i2c_client *i2c)
 					      &soc_codec_driver_sn6040,
 					      soc_codec_sn6040_dai,
 					      ARRAY_SIZE(soc_codec_sn6040_dai));
-	if (ret < 0){
+	if (ret < 0) {
 		printk("+failed to register codec:%d+", ret);
 		return ret;
 	}
@@ -1742,10 +1739,7 @@ static void sn6040_i2c_remove(struct i2c_client *i2c)
 	pm_runtime_disable(&i2c->dev);
 }
 
-static const struct i2c_device_id sn6040_i2c_id[] = {
-	{ "sn6040", 0 },
-	{}
-};
+static const struct i2c_device_id sn6040_i2c_id[] = { { "sn6040", 0 }, {} };
 MODULE_DEVICE_TABLE(i2c, sn6040_i2c_id);
 
 //#ifdef CONFIG_ACPI
@@ -1756,15 +1750,16 @@ MODULE_DEVICE_TABLE(i2c, sn6040_i2c_id);
 //MODULE_DEVICE_TABLE(acpi, sn6040_acpi_match);
 //#endif
 static struct of_device_id sn6040_i2c_ids[] = {
-	{ .compatible = "senarytech,sn6040-codec", },
+	{
+		.compatible = "senarytech,sn6040-codec",
+	},
 	{}
 };
 
 static const struct dev_pm_ops sn6040_runtime_pm = {
-	SET_RUNTIME_PM_OPS(sn6040_runtime_suspend, sn6040_runtime_resume,
-			   NULL)
-	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
-				pm_runtime_force_resume)
+	SET_RUNTIME_PM_OPS(sn6040_runtime_suspend, sn6040_runtime_resume, NULL)
+		SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
+					pm_runtime_force_resume)
 };
 
 static struct i2c_driver sn6040_i2c_driver = {
