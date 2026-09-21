@@ -9,6 +9,7 @@
 #include <linux/delay.h>
 #include <linux/mfd/syscon.h>
 #include <linux/module.h>
+#include <linux/of.h>
 #include <linux/of_device.h>
 #include <linux/platform_device.h>
 #include <linux/reset-controller.h>
@@ -141,8 +142,7 @@ static int sky1_audss_reset_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	struct device_node *parent_np;
 	struct regmap *regmap_cru;
-	const struct sky1_rst_variant *variant = ACPI_COMPANION(dev) ?
-		acpi_device_get_match_data(dev) : of_device_get_match_data(dev);
+	const struct sky1_rst_variant *variant = device_get_match_data(dev);
 
 	parent_np = of_get_parent(pdev->dev.of_node);
 	regmap_cru = syscon_node_to_regmap(parent_np);

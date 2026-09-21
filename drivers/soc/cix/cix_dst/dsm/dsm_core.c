@@ -108,14 +108,14 @@ int dsm_update_client_vendor_info(struct dsm_dev *dev)
 			continue;
 		if (dev->ic_name &&
 		    strncmp(tmp->ic_name, dev->ic_name, DSM_MAX_IC_NAME_LEN)) {
-			strncpy(tmp->ic_name, dev->ic_name,
+			strscpy(tmp->ic_name, dev->ic_name,
 				DSM_MAX_IC_NAME_LEN - 1);
 			tmp->ic_name[DSM_MAX_IC_NAME_LEN - 1] = '\0';
 		}
 		if (dev->module_name &&
 		    strncmp(tmp->module_name, dev->module_name,
 			    DSM_MAX_MODULE_NAME_LEN)) {
-			strncpy(tmp->module_name, dev->module_name,
+			strscpy(tmp->module_name, dev->module_name,
 				DSM_MAX_MODULE_NAME_LEN - 1);
 			tmp->module_name[DSM_MAX_MODULE_NAME_LEN - 1] = '\0';
 		}
@@ -190,22 +190,22 @@ struct dsm_client *dsm_register_client(struct dsm_dev *dev)
 		goto out;
 	}
 
-	strncpy(ptr->client_name, dev->name, CLIENT_NAME_LEN - 1);
+	strscpy(ptr->client_name, dev->name, CLIENT_NAME_LEN - 1);
 	ptr->client_name[CLIENT_NAME_LEN - 1] = '\0';
 
 	if (dev->device_name) {
-		strncpy(ptr->device_name, dev->device_name,
+		strscpy(ptr->device_name, dev->device_name,
 			DSM_MAX_DEVICE_NAME_LEN - 1);
 		ptr->device_name[DSM_MAX_DEVICE_NAME_LEN - 1] = '\0';
 	}
 
 	if (dev->ic_name) {
-		strncpy(ptr->ic_name, dev->ic_name, DSM_MAX_IC_NAME_LEN - 1);
+		strscpy(ptr->ic_name, dev->ic_name, DSM_MAX_IC_NAME_LEN - 1);
 		ptr->ic_name[DSM_MAX_IC_NAME_LEN - 1] = '\0';
 	}
 
 	if (dev->module_name) {
-		strncpy(ptr->module_name, dev->module_name,
+		strscpy(ptr->module_name, dev->module_name,
 			DSM_MAX_MODULE_NAME_LEN - 1);
 		ptr->module_name[DSM_MAX_MODULE_NAME_LEN - 1] = '\0';
 	}
@@ -774,7 +774,7 @@ static long dsm_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
 static const struct file_operations dsm_fops = {
 	.owner = THIS_MODULE,
-	.llseek = no_llseek,
+	.llseek = noop_llseek,
 	.unlocked_ioctl = dsm_ioctl,
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = dsm_ioctl,

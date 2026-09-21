@@ -175,7 +175,7 @@ static void rdr_logdir_add(struct dir_array *dirs, char *name, u64 size)
 	if (dirs->err)
 		return;
 
-	strncpy(dirs->dir[index].name, name, sizeof(dirs->dir[index].name));
+	strscpy(dirs->dir[index].name, name, sizeof(dirs->dir[index].name));
 	dirs->dir[index].size = size;
 	/*get date time*/
 	date = dirs->dir[index].name;
