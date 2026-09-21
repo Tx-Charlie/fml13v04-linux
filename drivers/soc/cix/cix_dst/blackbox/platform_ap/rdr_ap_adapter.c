@@ -186,7 +186,7 @@ static void rdr_ap_callback(u32 modid, u32 etype, u64 coreid)
  */
 static void rdr_ap_reset(u32 modid, u32 etype, u64 coreid)
 {
-	if (!in_atomic() && !irqs_disabled() && !in_irq())
+	if (!in_atomic() && !irqs_disabled() && !in_hardirq())
 		ksys_sync();
 
 	if (etype != AP_PANIC) {
@@ -348,8 +348,8 @@ static int rdr_ap_register_core(void)
 	g_eh_ap->mem.size = retinfo.log_len;
 	g_eh_ap->mem.vaddr = vaddr;
 
-	BB_DBG("addr=0x%llx, vaddr=%px, len=0x%llx\n", g_eh_ap->mem.paddr, vaddr,
-	       g_eh_ap->mem.size);
+	BB_DBG("addr=0x%llx, vaddr=%px, len=0x%llx\n", g_eh_ap->mem.paddr,
+	       vaddr, g_eh_ap->mem.size);
 	return ret;
 }
 
@@ -449,9 +449,8 @@ static int rdr_hisiap_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int rdr_hisiap_remove(struct platform_device *pdev)
+static void rdr_hisiap_remove(struct platform_device *pdev)
 {
-	return 0;
 }
 
 static struct platform_driver rdr_ap_driver = {

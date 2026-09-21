@@ -48,7 +48,7 @@ int rdr_rbuf_init(struct rdr_ringbuffer *q, u32 bytes, u32 fieldcnt,
 	memset(q->keys, 0, RDR_RB_KEYS_MAX + 1);
 
 	if (keys)
-		strncpy(q->keys, keys, RDR_RB_KEYS_MAX);
+		strscpy(q->keys, keys, RDR_RB_KEYS_MAX);
 	dcache_clean_poc((u64)q, ((u64)q) + sizeof(*q));
 	return 0;
 }
