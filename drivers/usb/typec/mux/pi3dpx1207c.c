@@ -21,7 +21,7 @@
 
 #include <linux/gpio.h>
 #ifdef CONFIG_OF
-#include <linux/of_gpio.h>
+#include <linux/gpio/consumer.h>
 #endif
 
 #define PI3DPX1207C_CONF 0x03
