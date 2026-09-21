@@ -371,7 +371,6 @@ static int reg_fixed_voltage_probe(struct platform_device *pdev)
 	cfg.init_data = config->init_data;
 	cfg.driver_data = drvdata;
 	cfg.of_node = pdev->dev.of_node;
-	cfg.fwnode = pdev->dev.fwnode;
 
 	drvdata->dev = devm_regulator_register(&pdev->dev, &drvdata->desc,
 					       &cfg);
