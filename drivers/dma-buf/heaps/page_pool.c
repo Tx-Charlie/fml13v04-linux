@@ -18,8 +18,8 @@
 
 /* page types we track in the pool */
 enum {
-	POOL_LOWPAGE,      /* Clean lowmem pages */
-	POOL_HIGHPAGE,     /* Clean highmem pages */
+	POOL_LOWPAGE, /* Clean lowmem pages */
+	POOL_HIGHPAGE, /* Clean highmem pages */
 
 	POOL_TYPE_SIZE,
 };
@@ -48,8 +48,8 @@ struct dmabuf_page_pool {
 static LIST_HEAD(pool_list);
 static DEFINE_MUTEX(pool_list_lock);
 
-static inline
-struct page *dmabuf_page_pool_alloc_pages(struct dmabuf_page_pool *pool)
+static inline struct page *
+dmabuf_page_pool_alloc_pages(struct dmabuf_page_pool *pool)
 {
 	if (fatal_signal_pending(current))
 		return NULL;
@@ -62,7 +62,8 @@ static inline void dmabuf_page_pool_free_pages(struct dmabuf_page_pool *pool,
 	__free_pages(page, pool->order);
 }
 
-static void dmabuf_page_pool_add(struct dmabuf_page_pool *pool, struct page *page)
+static void dmabuf_page_pool_add(struct dmabuf_page_pool *pool,
+				 struct page *page)
 {
 	int index;
 
@@ -79,7 +80,8 @@ static void dmabuf_page_pool_add(struct dmabuf_page_pool *pool, struct page *pag
 			    1 << pool->order);
 }
 
-static struct page *dmabuf_page_pool_remove(struct dmabuf_page_pool *pool, int index)
+static struct page *dmabuf_page_pool_remove(struct dmabuf_page_pool *pool,
+					    int index)
 {
 	struct page *page;
 
@@ -89,7 +91,8 @@ static struct page *dmabuf_page_pool_remove(struct dmabuf_page_pool *pool, int i
 		pool->count[index]--;
 		list_del(&page->lru);
 		spin_unlock(&pool->lock);
-		mod_node_page_state(page_pgdat(page), NR_KERNEL_MISC_RECLAIMABLE,
+		mod_node_page_state(page_pgdat(page),
+				    NR_KERNEL_MISC_RECLAIMABLE,
 				    -(1 << pool->order));
 		goto out;
 	}
@@ -143,7 +146,8 @@ static int dmabuf_page_pool_total(struct dmabuf_page_pool *pool, bool high)
 	return count << pool->order;
 }
 
-struct dmabuf_page_pool *dmabuf_page_pool_create(gfp_t gfp_mask, unsigned int order)
+struct dmabuf_page_pool *dmabuf_page_pool_create(gfp_t gfp_mask,
+						 unsigned int order)
 {
 	struct dmabuf_page_pool *pool = kmalloc(sizeof(*pool), GFP_KERNEL);
 	int i;
@@ -189,21 +193,21 @@ EXPORT_SYMBOL_GPL(dmabuf_page_pool_destroy);
 
 unsigned long dmabuf_page_pool_get_size(struct dmabuf_page_pool *pool)
 {
-       int i;
-       unsigned long num_pages = 0;
+	int i;
+	unsigned long num_pages = 0;
 
-       spin_lock(&pool->lock);
-       for (i = 0; i < POOL_TYPE_SIZE; ++i)
-               num_pages += pool->count[i];
-       spin_unlock(&pool->lock);
-       num_pages <<= pool->order; /* pool order is immutable */
+	spin_lock(&pool->lock);
+	for (i = 0; i < POOL_TYPE_SIZE; ++i)
+		num_pages += pool->count[i];
+	spin_unlock(&pool->lock);
+	num_pages <<= pool->order; /* pool order is immutable */
 
-       return num_pages * PAGE_SIZE;
+	return num_pages * PAGE_SIZE;
 }
 EXPORT_SYMBOL_GPL(dmabuf_page_pool_get_size);
 
-static int dmabuf_page_pool_do_shrink(struct dmabuf_page_pool *pool, gfp_t gfp_mask,
-				      int nr_to_scan)
+static int dmabuf_page_pool_do_shrink(struct dmabuf_page_pool *pool,
+				      gfp_t gfp_mask, int nr_to_scan)
 {
 	int freed = 0;
 	bool high;
@@ -247,12 +251,10 @@ static int dmabuf_page_pool_shrink(gfp_t gfp_mask, int nr_to_scan)
 	mutex_lock(&pool_list_lock);
 	list_for_each_entry(pool, &pool_list, list) {
 		if (only_scan) {
-			nr_total += dmabuf_page_pool_do_shrink(pool,
-							       gfp_mask,
+			nr_total += dmabuf_page_pool_do_shrink(pool, gfp_mask,
 							       nr_to_scan);
 		} else {
-			nr_freed = dmabuf_page_pool_do_shrink(pool,
-							      gfp_mask,
+			nr_freed = dmabuf_page_pool_do_shrink(pool, gfp_mask,
 							      nr_to_scan);
 			nr_to_scan -= nr_freed;
 			nr_total += nr_freed;
@@ -279,16 +281,19 @@ static unsigned long dmabuf_page_pool_shrink_scan(struct shrinker *shrinker,
 	return dmabuf_page_pool_shrink(sc->gfp_mask, sc->nr_to_scan);
 }
 
-struct shrinker pool_shrinker = {
-	.count_objects = dmabuf_page_pool_shrink_count,
-	.scan_objects = dmabuf_page_pool_shrink_scan,
-	.seeks = DEFAULT_SEEKS,
-	.batch = 0,
-};
+static struct shrinker *pool_shrinker;
 
 static int dmabuf_page_pool_init_shrinker(void)
 {
-	return register_shrinker(&pool_shrinker, "dmabuf-page-pool-shrinker");
+	pool_shrinker = shrinker_alloc(0, "dmabuf-page-pool-shrinker");
+	if (!pool_shrinker)
+		return -ENOMEM;
+
+	pool_shrinker->count_objects = dmabuf_page_pool_shrink_count;
+	pool_shrinker->scan_objects = dmabuf_page_pool_shrink_scan;
+	pool_shrinker->seeks = DEFAULT_SEEKS;
+	shrinker_register(pool_shrinker);
+	return 0;
 }
 module_init(dmabuf_page_pool_init_shrinker);
 MODULE_LICENSE("GPL v2");
