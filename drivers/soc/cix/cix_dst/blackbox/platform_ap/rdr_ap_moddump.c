@@ -130,7 +130,7 @@ int register_module_dump_mem_func(ap_dump_func func, const char *module_name,
 	mutex_lock(&g_modmem_mutex);
 	if (g_moddump[modu].mem.size != 0) {
 		g_moddump[modu].dump_funcptr = func;
-		strncpy(g_moddump[modu].module_name, module_name,
+		strscpy(g_moddump[modu].module_name, module_name,
 			AMNTN_MODULE_NAME_LEN - 1);
 		g_moddump[modu].module_name[AMNTN_MODULE_NAME_LEN - 1] = '\0';
 		ret = 0;

@@ -625,7 +625,7 @@ static void lt7911uxc_format_change(struct v4l2_subdev *sd)
 
 static void lt7911uxc_irq_poll_timer(struct timer_list *t)
 {
-	struct lt7911uxc *lt7911uxc = from_timer(lt7911uxc, t, timer);
+	struct lt7911uxc *lt7911uxc = timer_container_of(lt7911uxc, t, timer);
 
 	schedule_work(&lt7911uxc->work_i2c_poll);
 	mod_timer(&lt7911uxc->timer,
@@ -1306,7 +1306,7 @@ static void lt7911uxc_remove(struct i2c_client *client)
 	lt7911uxc_unregister_audio_device(lt7911uxc);
 	v4l2_ctrl_handler_free(&lt7911uxc->hdl);
 
-	del_timer_sync(&lt7911uxc->timer);
+	timer_delete_sync(&lt7911uxc->timer);
 	flush_work(&lt7911uxc->work_i2c_poll);
 
 #if defined(CONFIG_MEDIA_CONTROLLER)

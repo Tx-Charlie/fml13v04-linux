@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 
 ccflags-y := \
-    -I $(srctree)/$(src)/include \
-    -I $(srctree)/$(src)
+    -I$(src)/include -I$(src)
 
 linlon-dp-y := \
     linlondp_drv.o \

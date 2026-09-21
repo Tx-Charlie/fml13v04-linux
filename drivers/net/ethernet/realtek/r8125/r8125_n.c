@@ -14529,7 +14529,7 @@ rtl8125_up(struct net_device *dev)
 /*
 static inline void rtl8125_delete_esd_timer(struct net_device *dev, struct timer_list *timer)
 {
-	del_timer_sync(timer);
+	timer_delete_sync(timer);
 }
 
 static inline void rtl8125_request_esd_timer(struct net_device *dev)
@@ -14548,7 +14548,7 @@ static inline void rtl8125_request_esd_timer(struct net_device *dev)
 /*
 static inline void rtl8125_delete_link_timer(struct net_device *dev, struct timer_list *timer)
 {
-	del_timer_sync(timer);
+	timer_delete_sync(timer);
 }
 
 static inline void rtl8125_request_link_timer(struct net_device *dev)
@@ -16819,7 +16819,7 @@ rtl8125_esd_timer(struct timer_list *t)
 	struct rtl8125_private *tp = netdev_priv(dev);
 	struct timer_list *timer = &tp->esd_timer;
 #else
-	struct rtl8125_private *tp = from_timer(tp, t, esd_timer);
+	struct rtl8125_private *tp = timer_container_of(tp, t, esd_timer);
 	//struct net_device *dev = tp->dev;
 	struct timer_list *timer = t;
 #endif
@@ -16842,7 +16842,7 @@ rtl8125_link_timer(struct timer_list *t)
 	struct rtl8125_private *tp = netdev_priv(dev);
 	struct timer_list *timer = &tp->link_timer;
 #else
-	struct rtl8125_private *tp = from_timer(tp, t, link_timer);
+	struct rtl8125_private *tp = timer_container_of(tp, t, link_timer);
 	struct net_device *dev = tp->dev;
 	struct timer_list *timer = t;
 #endif

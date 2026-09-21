@@ -5,6 +5,7 @@
  * Copyright (C) 2025 CIX Ltd.
  */
 #include <linux/cacheflush.h>
+#include <linux/vmalloc.h>
 #include <linux/arm_sdei.h>
 #include <linux/stddef.h>
 #include <asm/stacktrace.h>
@@ -260,7 +261,7 @@ void stack_last_task_update(int cpu, struct task_struct *task)
 		return;
 
 	stack = &head->stack[cpu];
-	strncpy(stack->comm, task->comm, sizeof(task->comm) - 1);
+	strscpy(stack->comm, task->comm, sizeof(task->comm) - 1);
 	stack->comm[TASK_COMM_LEN - 1] = '\0';
 
 	vm = task->stack_vm_area;

@@ -76,7 +76,7 @@ static int pmic_errorno_to_str(int error_no, char *str, int buff_len)
 			if (strlen(pmic_error_no_map[i].name) >= buff_len)
 				return -1;
 
-			strncpy(str, pmic_error_no_map[i].name, buff_len - 1);
+			strscpy(str, pmic_error_no_map[i].name, buff_len - 1);
 			pr_debug("error_no:%d, err_str:%s\n", error_no, str);
 			return 0;
 		}

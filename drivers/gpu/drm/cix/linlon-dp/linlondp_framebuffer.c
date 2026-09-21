@@ -5,6 +5,7 @@
  *
  */
 #include <drm/drm_device.h>
+#include <drm/drm_print.h>
 #include <drm/drm_fb_dma_helper.h>
 #include <drm/drm_gem.h>
 #include <drm/drm_gem_dma_helper.h>
@@ -159,6 +160,7 @@ linlondp_fb_none_afbc_size_check(struct linlondp_dev *mdev,
 
 struct drm_framebuffer *
 linlondp_fb_create(struct drm_device *dev, struct drm_file *file,
+		   const struct drm_format_info *info,
 		   const struct drm_mode_fb_cmd2 *mode_cmd)
 {
 	struct linlondp_dev *mdev = dev->dev_private;
@@ -178,7 +180,7 @@ linlondp_fb_create(struct drm_device *dev, struct drm_file *file,
 		return ERR_PTR(-EINVAL);
 	}
 
-	drm_helper_mode_fill_fb_struct(dev, &kfb->base, mode_cmd);
+	drm_helper_mode_fill_fb_struct(dev, &kfb->base, info, mode_cmd);
 
 	if (kfb->base.modifier)
 		ret = linlondp_fb_afbc_size_check(kfb, file, mode_cmd);

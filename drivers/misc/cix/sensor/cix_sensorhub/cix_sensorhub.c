@@ -8,6 +8,7 @@
 #define pr_fmt(fmt) "[cix_sensorhub]" fmt
 
 #include <linux/slab.h>
+#include <linux/vmalloc.h>
 #include <linux/workqueue.h>
 #include <linux/kthread.h>
 #include <linux/platform_device.h>
@@ -285,9 +286,9 @@ static void cix_nanohub_get_sensor_info(void)
 			continue;
 		support_sensors[j].sensor_type = sensor_state[i].sensorType;
 		support_sensors[j].gain = sensor_state[i].gain;
-		strlcpy(support_sensors[j].name, sensor_state[i].name,
+		strscpy(support_sensors[j].name, sensor_state[i].name,
 				sizeof(support_sensors[j].name));
-		strlcpy(support_sensors[j].vendor, sensor_state[i].vendor,
+		strscpy(support_sensors[j].vendor, sensor_state[i].vendor,
 				sizeof(support_sensors[j].vendor));
 		j++;
 	}
@@ -306,9 +307,9 @@ static void cix_nanohub_set_sensor_info(struct sensor_info *info,
 	if (!status)
 		p->sensorType = 0;
 	else {
-		strlcpy(p->name, info->name, sizeof(p->name));
+		strscpy(p->name, info->name, sizeof(p->name));
 		if (strlen(info->vendor))
-			strlcpy(p->vendor, info->vendor, sizeof(p->vendor));
+			strscpy(p->vendor, info->vendor, sizeof(p->vendor));
 	}
 }
 
@@ -321,38 +322,38 @@ static void cix_nanohub_init_sensor_info(void)
 	p = &sensor_state[SENSOR_TYPE_ACCELEROMETER];
 	p->sensorType = SENSOR_TYPE_ACCELEROMETER;
 	p->gain = 1000;
-	strlcpy(p->name, "accelerometer", sizeof(p->name));
-	strlcpy(p->vendor, "cix", sizeof(p->vendor));
+	strscpy(p->name, "accelerometer", sizeof(p->name));
+	strscpy(p->vendor, "cix", sizeof(p->vendor));
 
 	p = &sensor_state[SENSOR_TYPE_GYROSCOPE];
 	p->sensorType = SENSOR_TYPE_GYROSCOPE;
 	p->gain = 1000000;
-	strlcpy(p->name, "gyroscope", sizeof(p->name));
-	strlcpy(p->vendor, "cix", sizeof(p->vendor));
+	strscpy(p->name, "gyroscope", sizeof(p->name));
+	strscpy(p->vendor, "cix", sizeof(p->vendor));
 
 	p = &sensor_state[SENSOR_TYPE_MAGNETIC_FIELD];
 	p->sensorType = SENSOR_TYPE_MAGNETIC_FIELD;
 	p->gain = 100;
-	strlcpy(p->name, "magnetic", sizeof(p->name));
-	strlcpy(p->vendor, "cix", sizeof(p->vendor));
+	strscpy(p->name, "magnetic", sizeof(p->name));
+	strscpy(p->vendor, "cix", sizeof(p->vendor));
 
 	p = &sensor_state[SENSOR_TYPE_LIGHT];
 	p->sensorType = SENSOR_TYPE_LIGHT;
 	p->gain = 1;
-	strlcpy(p->name, "light", sizeof(p->name));
-	strlcpy(p->vendor, "cix", sizeof(p->vendor));
+	strscpy(p->name, "light", sizeof(p->name));
+	strscpy(p->vendor, "cix", sizeof(p->vendor));
 
 	p = &sensor_state[SENSOR_TYPE_PROXIMITY];
 	p->sensorType = SENSOR_TYPE_PROXIMITY;
 	p->gain = 1;
-	strlcpy(p->name, "proximity", sizeof(p->name));
-	strlcpy(p->vendor, "cix", sizeof(p->vendor));
+	strscpy(p->name, "proximity", sizeof(p->name));
+	strscpy(p->vendor, "cix", sizeof(p->vendor));
 
 	p = &sensor_state[SENSOR_TYPE_PRESSURE];
 	p->sensorType = SENSOR_TYPE_PRESSURE;
 	p->gain = 100;
-	strlcpy(p->name, "pressure", sizeof(p->name));
-	strlcpy(p->vendor, "cix", sizeof(p->vendor));
+	strscpy(p->name, "pressure", sizeof(p->name));
+	strscpy(p->vendor, "cix", sizeof(p->vendor));
 
 }
 
@@ -1042,10 +1043,10 @@ static void cix_nanohub_get_devinfo(void)
 			find_sensor = false;
 		} else {
 			find_sensor = true;
-			strlcpy(info.name, hubinfo.name, sizeof(info.name));
+			strscpy(info.name, hubinfo.name, sizeof(info.name));
 			/* restore mag lib info */
 			if (sensor == SENSOR_TYPE_MAGNETIC_FIELD) {
-				strlcpy(info.vendor,
+				strscpy(info.vendor,
 					hubinfo.mag_dev_info.libname,
 					sizeof(info.vendor));
 			}
@@ -1805,17 +1806,16 @@ exit:
 	return err;
 }
 
-static int cix_nanohub_remove(struct platform_device *pdev)
+static void cix_nanohub_remove(struct platform_device *pdev)
 {
 	struct cix_nanohub_device *device = cix_nanohub_dev;
 
-	del_timer_sync(&device->sync_time_timer);
+	timer_delete_sync(&device->sync_time_timer);
 	hf_manager_destroy(device->hf_dev.manager);
 	sfh_ipi_unregistration(IPI_SENSOR);
 	vfree(device->wp_queue.ringbuffer);
 	hf_device_unregister(&device->hf_dev);
 	kfree(device);
-	return 0;
 }
 
 static void cix_nanohub_shutdown(struct platform_device *pdev)
