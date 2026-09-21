@@ -206,14 +206,13 @@ static int linlondp_platform_probe(struct platform_device *pdev)
 #endif
 }
 
-static int linlondp_platform_remove(struct platform_device *pdev)
+static void linlondp_platform_remove(struct platform_device *pdev)
 {
 #if !IS_ENABLED(CONFIG_DRM_CIX_COMPONENT_BIND_BYPASSED)
 	component_master_del(&pdev->dev, &linlondp_master_ops);
 #else
 	linlondp_unbind(&pdev->dev);
 #endif
-	return 0;
 }
 
 static const struct of_device_id linlondp_of_match[] = {
