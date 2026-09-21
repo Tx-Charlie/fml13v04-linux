@@ -40,8 +40,10 @@ cdnsp-y						:= cdnsp-plat.o
 	obj-$(CONFIG_USB_CDNS_SUPPORT)			+= cdns-usb-common.o
 	obj-$(CONFIG_USB_CDNS3)				+= cdns3.o
 	obj-$(CONFIG_USB_CDNSP)				+= cdnsp.o
+
 cdnsp-$(CONFIG_USB_CDNSP_GADGET)		+= cdnsp-ring.o cdnsp-gadget.o \
 						   cdnsp-mem.o cdnsp-ep0.o
+
 ifneq ($(CONFIG_USB_CDNSP_GADGET),)
 	cdnsp-$(CONFIG_TRACING)				+= cdnsp-trace.o
 	cdns3-$(CONFIG_TRACING)				+= cdns3-trace.o

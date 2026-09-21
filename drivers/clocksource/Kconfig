@@ -827,4 +827,7 @@ endchoice
 endmenu
 config TIMER_SKY1_GPT
 	bool "SKY1 timer driver"
+	select CLKSRC_MMIO
+	help
 	  Enables the support for the cix sky1 timer driver.
+

@@ -531,14 +531,15 @@ config LOONGSON2_THERMAL
 	  temperature threshold, the interrupt will occur.
 
 endif
-	   default y
 config THERMAL_DEFAULT_GOV_ACPI_DP
 	bool "acpi_dp"
 	select THERMAL_GOV_ACPI_DP
+	help
 	  Use the acpi_dp governor as default.
+
 config THERMAL_GOV_ACPI_DP
 	bool "ACPI DP thermal governor"
+	help
 	  Enable this to manage platform thermals using acpi_dp governor.
-menu "Cix thermal drivers"
-depends on ARCH_CIX || COMPILE_TEST
+
 source "drivers/thermal/cix/Kconfig"

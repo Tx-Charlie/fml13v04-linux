@@ -371,3 +371,6 @@ endif
 config DRM_PANEL_ORIENTATION_QUIRKS
 	tristate
 source "drivers/gpu/drm/cix/Kconfig"
+
+# Keep legacy drivers last
+

@@ -728,6 +728,5 @@ source "drivers/pinctrl/ultrarisc/Kconfig"
 source "drivers/pinctrl/uniphier/Kconfig"
 source "drivers/pinctrl/visconti/Kconfig"
 source "drivers/pinctrl/vt8500/Kconfig"
-source "drivers/pinctrl/cix/Kconfig"
 
 endif
