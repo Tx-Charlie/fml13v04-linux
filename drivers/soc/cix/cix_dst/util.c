@@ -19,6 +19,7 @@
 #include <linux/file.h>
 #include <linux/namei.h>
 #include <linux/io.h>
+#include <linux/vmalloc.h>
 #include <linux/arm-smccc.h>
 #include <linux/soc/cix/util.h>
 #include <mntn_public_interface.h>
@@ -132,9 +133,10 @@ int rdr_rm_file(const char *nodename)
 	int deleted = 0;
 	int err;
 
-	dentry = kern_path_locked(nodename, &parent);
+	dentry = kern_path_parent(nodename, &parent);
 	if (IS_ERR(dentry))
 		return PTR_ERR(dentry);
+	inode_lock_nested(d_inode(parent.dentry), I_MUTEX_PARENT);
 
 	if (d_really_is_positive(dentry)) {
 		struct kstat stat;
@@ -316,20 +318,22 @@ static int create_dir(const char *name, umode_t mode)
 	int err;
 
 	DST_DBG("need create dir %s\n", name);
-	dentry = kern_path_create(AT_FDCWD, name, &path, LOOKUP_DIRECTORY);
+	dentry = start_creating_path(AT_FDCWD, name, &path, 0);
 	if (IS_ERR(dentry)) {
-		DST_ERR("failed to kern_path_create: %s %ld\n", name,
+		DST_ERR("failed to start_creating_path: %s %ld\n", name,
 			PTR_ERR(dentry));
 		return PTR_ERR(dentry);
 	}
 
-	err = vfs_mkdir(rdr_mnt_idmap, d_inode(path.dentry), dentry, mode);
+	dentry = vfs_mkdir(rdr_mnt_idmap, d_inode(path.dentry), dentry, mode,
+			   NULL);
+	err = PTR_ERR_OR_ZERO(dentry);
 	if (!err)
 		/* mark as kernel-created inode */
 		d_inode(dentry)->i_private = (void *)g_rdr_flag;
 	else
 		DST_ERR("failed to mkdir: %s %d\n", name, err);
-	done_path_create(&path, dentry);
+	end_creating_path(&path, dentry);
 	return err;
 }
 
@@ -395,16 +399,17 @@ int rdr_rm_dir(const char *name)
 
 	DST_DBG("rm dir:%s\n", name);
 
-	dentry = kern_path_locked(name, &parent);
+	dentry = kern_path_parent(name, &parent);
 	if (IS_ERR(dentry))
 		return PTR_ERR(dentry);
+	inode_lock_nested(d_inode(parent.dentry), I_MUTEX_PARENT);
 
 	if (!d_is_dir(dentry)) {
 		err = -ENOENT;
 		goto exit_rm;
 	}
 
-	list_for_each_entry(child, &dentry->d_subdirs, d_child) {
+	hlist_for_each_entry(child, &dentry->d_children, d_sib) {
 		if (!d_inode(child))
 			continue;
 		d_inode(child)->i_private = NULL;
@@ -427,7 +432,7 @@ int rdr_rm_dir(const char *name)
 		}
 	}
 
-	err = vfs_rmdir(rdr_mnt_idmap, d_inode(parent.dentry), dentry);
+	err = vfs_rmdir(rdr_mnt_idmap, d_inode(parent.dentry), dentry, NULL);
 	if (err)
 		DST_ERR("rm dir %s failed\n", name);
 
@@ -440,42 +445,33 @@ exit_rm:
 
 unsigned long dst_get_phy_addr(unsigned long addr)
 {
-	struct mm_struct *mm = NULL;
-	struct vm_area_struct *vma;
 	struct page *page;
 	unsigned long val = 0;
+	int ret;
+
+	addr = untagged_addr(addr);
 
 	if (is_ttbr0_addr(addr)) {
-		mm = current->active_mm;
-		DST_DBG("user addr, mm: %px\n", mm);
-	} else if (is_ttbr1_addr(addr)) {
-		/* TTBR1 */
-		mm = &init_mm;
-		DST_DBG("kernel addr, mm: %px\n", mm);
+		ret = get_user_pages_fast(addr & PAGE_MASK, 1, FOLL_GET, &page);
+		if (ret <= 0 || !page)
+			return 0;
+		val = page_to_phys(page) | (addr & ~PAGE_MASK);
+		put_page(page);
+		return val;
 	}
 
-	if (IS_ERR_OR_NULL(mm))
-		mm = &init_mm;
-	DST_DBG("mm: %px\n", mm);
+	if (is_ttbr1_addr(addr)) {
+		if (is_vmalloc_addr((void *)addr)) {
+			page = vmalloc_to_page((void *)(addr & PAGE_MASK));
+			if (!page)
+				return 0;
+			return page_to_phys(page) | (addr & ~PAGE_MASK);
+		}
+		if (virt_addr_valid((void *)addr))
+			return __pa(addr);
+	}
 
-	vma = find_vma(mm, untagged_addr(addr));
-	DST_DBG("vma: %px\n", vma);
-	if (IS_ERR_OR_NULL(vma))
-		return 0;
-
-	DST_DBG("vma_start: 0x%lx, vma_end: 0x%lx\n", vma->vm_start,
-		vma->vm_end);
-	if (addr < vma->vm_start || addr > vma->vm_end)
-		return 0;
-
-	page = follow_page(vma, addr, FOLL_GET);
-	DST_DBG("page: %px\n", page);
-	if (IS_ERR_OR_NULL(page))
-		return 0;
-
-	val = page_to_phys(page) | (addr & ~PAGE_MASK);
-	put_page(page);
-	return val;
+	return 0;
 }
 
 /*
