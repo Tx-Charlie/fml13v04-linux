@@ -144,6 +144,44 @@ void profile_tick(int type)
 #include <linux/seq_file.h>
 #include <linux/uaccess.h>
 
+static BLOCKING_NOTIFIER_HEAD(task_exit_notifier);
+static BLOCKING_NOTIFIER_HEAD(munmap_notifier);
+
+int profile_event_register(enum profile_type type, struct notifier_block *n)
+{
+	int err = -EINVAL;
+
+	switch (type) {
+	case PROFILE_TASK_EXIT:
+		err = blocking_notifier_chain_register(&task_exit_notifier, n);
+		break;
+	case PROFILE_MUNMAP:
+		err = blocking_notifier_chain_register(&munmap_notifier, n);
+		break;
+	}
+
+	return err;
+}
+EXPORT_SYMBOL_GPL(profile_event_register);
+
+int profile_event_unregister(enum profile_type type, struct notifier_block *n)
+{
+	int err = -EINVAL;
+
+	switch (type) {
+	case PROFILE_TASK_EXIT:
+		err = blocking_notifier_chain_unregister(&task_exit_notifier, n);
+		break;
+	case PROFILE_MUNMAP:
+		err = blocking_notifier_chain_unregister(&munmap_notifier, n);
+		break;
+	}
+
+	return err;
+}
+EXPORT_SYMBOL_GPL(profile_event_unregister);
+
+
 /*
  * This function accesses profiling information. The returned data is
  * binary: the sampling step and the actual contents of the profile
