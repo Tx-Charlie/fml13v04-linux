@@ -1056,6 +1056,29 @@ scmi_power_scale_get(const struct scmi_protocol_handle *ph)
 	return pi->power_scale;
 }
 
+/* Device specific ops */
+static int scmi_dev_domain_id(struct device *dev)
+{
+	struct fwnode_reference_args fwnode_args;
+	int index;
+
+	index = fwnode_property_match_string(dev->fwnode, "power-domain-names",
+					     "perf");
+	if (index < 0) {
+		if (fwnode_property_get_reference_args(dev->fwnode, "clocks",
+						       "#clock-cells", 1, 0,
+						       &fwnode_args))
+			return -EINVAL;
+	} else {
+		if (fwnode_property_get_reference_args(dev->fwnode, "power-domains",
+						       "#power-domain-cells", 1,
+						       index, &fwnode_args))
+			return -EINVAL;
+	}
+
+	return fwnode_args.args[0];
+}
+
 static const struct scmi_perf_proto_ops perf_proto_ops = {
 	.num_domains_get = scmi_perf_num_domains_get,
 	.info_get = scmi_perf_info_get,
@@ -1063,6 +1086,7 @@ static const struct scmi_perf_proto_ops perf_proto_ops = {
 	.limits_get = scmi_perf_limits_get,
 	.level_set = scmi_perf_level_set,
 	.level_get = scmi_perf_level_get,
+	.device_domain_id = scmi_dev_domain_id,
 	.transition_latency_get = scmi_dvfs_transition_latency_get,
 	.rate_limit_get = scmi_dvfs_rate_limit_get,
 	.device_opps_add = scmi_dvfs_device_opps_add,
