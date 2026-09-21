@@ -28,23 +28,4 @@ obj-$(CONFIG_USB_CDNSP_PCI)			+= cdnsp-pci.o
 obj-$(CONFIG_USB_CDNS3_TI)			+= cdns3-ti.o
 obj-$(CONFIG_USB_CDNS3_IMX)			+= cdns3-imx.o
 obj-$(CONFIG_USB_CDNS3_STARFIVE)		+= cdns3-starfive.o
-cdnsp-y						:= cdnsp-plat.o
-	obj-m						+= cdns-usb-common.o
-	ifneq ($(CONFIG_USB_CDNS3),)
-		obj-m						+= cdns3.o
-	endif
-	ifneq ($(CONFIG_USB_CDNSP),)
-		obj-m						+= cdnsp.o
-	ifeq ($(CONFIG_USB_CDNS3)$(CONFIG_USB_CDNSP),)
-		$(error "invalid cdns usb version")
-	obj-$(CONFIG_USB_CDNS_SUPPORT)			+= cdns-usb-common.o
-	obj-$(CONFIG_USB_CDNS3)				+= cdns3.o
-	obj-$(CONFIG_USB_CDNSP)				+= cdnsp.o
-
-cdnsp-$(CONFIG_USB_CDNSP_GADGET)		+= cdnsp-ring.o cdnsp-gadget.o \
-						   cdnsp-mem.o cdnsp-ep0.o
-
-ifneq ($(CONFIG_USB_CDNSP_GADGET),)
-	cdnsp-$(CONFIG_TRACING)				+= cdnsp-trace.o
-	cdns3-$(CONFIG_TRACING)				+= cdns3-trace.o
 obj-$(CONFIG_USB_CDNSP_SKY1)			+= cdnsp-sky1.o
