@@ -344,8 +344,7 @@ static int sky1_reset_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	struct resource *res;
 	void __iomem *base;
-	const struct sky1_src_variant *variant = ACPI_COMPANION(dev) ?
-		acpi_device_get_match_data(dev) : of_device_get_match_data(dev);
+	const struct sky1_src_variant *variant = device_get_match_data(dev);
 	struct regmap_config config = {
 		.reg_bits = 32,
 		.val_bits = 32,
