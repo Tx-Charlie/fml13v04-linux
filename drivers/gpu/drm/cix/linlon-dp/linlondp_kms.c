@@ -69,7 +69,6 @@ static struct drm_driver linlondp_kms_driver = {
 	.fops = &linlondp_cma_fops,
 	.name = "linlondp",
 	.desc = "Linlon Display Processor driver",
-	.date = "20230426",
 	.major = 0,
 	.minor = 0,
 };

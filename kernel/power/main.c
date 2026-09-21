@@ -385,24 +385,7 @@ power_attr(pm_test);
 #endif /* CONFIG_PM_SLEEP_DEBUG */
 
 #define SUSPEND_NR_STEPS	SUSPEND_RESUME
-#define REC_FAILED_NUM		2
-
-struct suspend_stats {
-	unsigned int step_failures[SUSPEND_NR_STEPS];
-	unsigned int success;
-	unsigned int fail;
-	int last_failed_dev;
-	char failed_devs[REC_FAILED_NUM][40];
-	int last_failed_errno;
-	int errno[REC_FAILED_NUM];
-	int last_failed_step;
-	u64 last_hw_sleep;
-	u64 total_hw_sleep;
-	u64 max_hw_sleep;
-	enum suspend_stat_step failed_steps[REC_FAILED_NUM];
-};
-
-static struct suspend_stats suspend_stats;
+struct suspend_stats suspend_stats;
 static DEFINE_MUTEX(suspend_stats_lock);
 
 void dpm_save_failed_dev(const char *name)

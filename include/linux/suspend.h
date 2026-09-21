@@ -604,4 +604,23 @@ enum suspend_stat_step {
 void dpm_save_failed_dev(const char *name);
 void dpm_save_failed_step(enum suspend_stat_step step);
 
+#define REC_FAILED_NUM		2
+
+struct suspend_stats {
+	unsigned int step_failures[SUSPEND_RESUME];
+	unsigned int success;
+	unsigned int fail;
+	int last_failed_dev;
+	char failed_devs[REC_FAILED_NUM][40];
+	int last_failed_errno;
+	int errno[REC_FAILED_NUM];
+	int last_failed_step;
+	u64 last_hw_sleep;
+	u64 total_hw_sleep;
+	u64 max_hw_sleep;
+	enum suspend_stat_step failed_steps[REC_FAILED_NUM];
+};
+
+extern struct suspend_stats suspend_stats;
+
 #endif /* _LINUX_SUSPEND_H */

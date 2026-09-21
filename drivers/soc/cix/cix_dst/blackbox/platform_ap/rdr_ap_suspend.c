@@ -193,14 +193,14 @@ static void suspend_stat_cleartext(struct file *fp, struct suspend_stats *stats)
 			    "%s: %d\n%s: %d\n%s: %d\n%s: %d\n%s: %d\n"
 			    "%s: %d\n%s: %d\n%s: %d\n%s: %d\n%s: %d\n",
 			    "success", stats->success, "fail", stats->fail,
-			    "failed_freeze", stats->failed_freeze,
-			    "failed_prepare", stats->failed_prepare,
-			    "failed_suspend", stats->failed_suspend,
-			    "failed_suspend_late", stats->failed_suspend_late,
-			    "failed_suspend_noirq", stats->failed_suspend_noirq,
-			    "failed_resume", stats->failed_resume,
-			    "failed_resume_early", stats->failed_resume_early,
-			    "failed_resume_noirq", stats->failed_resume_noirq);
+			    "step_failures[SUSPEND_FREEZE]", stats->step_failures[SUSPEND_FREEZE],
+			    "step_failures[SUSPEND_PREPARE]", stats->step_failures[SUSPEND_PREPARE],
+			    "step_failures[SUSPEND_SUSPEND]", stats->step_failures[SUSPEND_SUSPEND],
+			    "step_failures[SUSPEND_SUSPEND_LATE]", stats->step_failures[SUSPEND_SUSPEND_LATE],
+			    "step_failures[SUSPEND_SUSPEND_NOIRQ]", stats->step_failures[SUSPEND_SUSPEND_NOIRQ],
+			    "step_failures[SUSPEND_RESUME]", stats->step_failures[SUSPEND_RESUME],
+			    "step_failures[SUSPEND_RESUME_EARLY]", stats->step_failures[SUSPEND_RESUME_EARLY],
+			    "step_failures[SUSPEND_RESUME_NOIRQ]", stats->step_failures[SUSPEND_RESUME_NOIRQ]);
 	rdr_cleartext_print(fp, &err, "failures:\n  last_failed_dev:\t%-s\n",
 			    stats->failed_devs[last_dev]);
 	for (i = 1; i < REC_FAILED_NUM; i++) {

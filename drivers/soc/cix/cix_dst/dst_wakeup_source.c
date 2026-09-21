@@ -42,13 +42,16 @@ static void wakeup_src_work(struct work_struct *work)
 			g_wakeup_src_dat.wakeup_sub_src[3]);
 	}
 }
-static void wakeup_src_resume(void)
+static void wakeup_src_resume(void *data)
 {
 	schedule_delayed_work(&g_delay_wq, msecs_to_jiffies(WAKEUP_WORK_DELAY_MS));
 }
 static struct syscore_ops wakeup_src_syscore_ops = {
 	.suspend = NULL,
 	.resume = wakeup_src_resume,
+};
+static struct syscore wakeup_src_syscore = {
+	.ops = &wakeup_src_syscore_ops,
 };
 static int wakeup_src_init(void)
 {
@@ -58,7 +61,7 @@ static int wakeup_src_init(void)
 	if (ret) {
 		pr_err("register wakeup src rx callback failed\n");
 	}
-	register_syscore_ops(&wakeup_src_syscore_ops);
+	register_syscore(&wakeup_src_syscore);
 	INIT_DELAYED_WORK(&g_delay_wq, wakeup_src_work);
 	return ret;
 }

@@ -7,6 +7,7 @@
 #include <linux/clk.h>
 #include <linux/pm_runtime.h>
 #include <linux/spinlock.h>
+#include <linux/timer.h>
 #include <linux/clk-provider.h>
 
 #include <drm/drm_atomic.h>
@@ -280,7 +281,7 @@ void linlondp_crtc_handle_event(struct linlondp_crtc *kcrtc,
 
 static void linlondp_wb_job_timer_callback(struct timer_list *t)
 {
-	struct linlondp_wb_timer_data *data = from_timer(data, t, timer);
+	struct linlondp_wb_timer_data *data = timer_container_of(data, t, timer);
 	struct drm_writeback_job *job;
 	unsigned long flags;
 	struct linlondp_crtc *kcrtc;
@@ -317,7 +318,7 @@ static void linlondp_set_wb_job_timer(struct linlondp_crtc *kcrtc)
 	struct linlondp_wb_connector *wb_conn = kcrtc->wb_conn;
 
 	if (wb_conn->timer_data.timer_started)
-		del_timer(&wb_conn->timer_data.timer);
+		timer_delete(&wb_conn->timer_data.timer);
 
 	wb_conn->timer_data.param = kcrtc;
 	timer_setup(&wb_conn->timer_data.timer, linlondp_wb_job_timer_callback, 0);

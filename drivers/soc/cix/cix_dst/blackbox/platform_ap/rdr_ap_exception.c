@@ -92,6 +92,7 @@ int rdr_exception_init(void)
 	ret = atomic_notifier_chain_register(&panic_notifier_list,
 					     &ap_panic_block);
 	panic_on_oops = 1;
+	extern int sysctl_panic_on_rcu_stall;
 	sysctl_panic_on_rcu_stall = 1;
 	ret = register_die_notifier(&ap_die_block);
 	return ret;
