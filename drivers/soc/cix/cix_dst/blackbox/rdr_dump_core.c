@@ -80,9 +80,9 @@ static int parse_log_entry(const char *input, log_entry *entry)
 		return -1;
 	}
 
-	strncpy(entry->level, input + level_offset, level_len);
+	strscpy(entry->level, input + level_offset, level_len);
 	entry->level[level_len] = '\0';
-	strncpy(time, input + time_offset, time_len);
+	strscpy(time, input + time_offset, time_len);
 	time[time_len] = '\0';
 	entry->log = (char *)input + log_offset;
 
