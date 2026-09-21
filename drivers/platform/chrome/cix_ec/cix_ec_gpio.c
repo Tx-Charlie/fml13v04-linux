@@ -66,7 +66,7 @@ static int cix_ec_get(struct gpio_chip *gc, unsigned offset)
 	return val;
 }
 
-static void cix_ec_set(struct gpio_chip *gc, unsigned offset, int value)
+static int cix_ec_set(struct gpio_chip *gc, unsigned offset, int value)
 {
 	struct cix_ec_gpio_priv *priv = gpiochip_get_data(gc);
 	struct cros_ec_device *ec = priv->ec;
@@ -94,6 +94,7 @@ static void cix_ec_set(struct gpio_chip *gc, unsigned offset, int value)
 	rc = cros_ec_cmd_xfer_status(ec, msg);
 	if (rc < 0)
 		printk("cix_ec_set failed\n");
+	return rc;
 }
 
 static int cix_ec_gpio_probe(struct platform_device *pdev)

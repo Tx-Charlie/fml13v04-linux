@@ -756,8 +756,8 @@ static int dsu_pctrl_init_device(struct platform_device *pdev)
 
 	dsu_pctrl_reinit_device(&pdev->dev);
 
-	hrtimer_init(&dsu->poll_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	dsu->poll_timer.function = dsu_pctrl_polling;
+	hrtimer_setup(&dsu->poll_timer, dsu_pctrl_polling,
+		      CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	hrtimer_start(&dsu->poll_timer, ms_to_ktime(dsu->up_polling_ms),
 		      HRTIMER_MODE_REL);
 
