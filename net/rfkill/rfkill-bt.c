@@ -27,7 +27,8 @@
 
 static struct rfkill_cix_platform_data *g_rfkill;
 
-static inline void rfkill_sleep_bt_internal(struct rfkill_cix_platform_data *rfkill, bool sleep)
+static inline void
+rfkill_sleep_bt_internal(struct rfkill_cix_platform_data *rfkill, bool sleep)
 {
 	if (rfkill->gpiod_wake_bt == NULL) {
 		DBG("*** Not support bt wakeup and sleep\n");
@@ -56,7 +57,7 @@ void rfkill_sleep_bt(bool sleep)
 }
 
 static ssize_t bluesleep_read_proc_lpm(struct file *file, char __user *buffer,
-				   size_t count, loff_t *data)
+				       size_t count, loff_t *data)
 {
 	return sprintf(buffer, "unsupported to read\n");
 }
@@ -69,15 +70,15 @@ static ssize_t bluesleep_write_proc_lpm(struct file *file,
 }
 
 static ssize_t bluesleep_read_proc_btwrite(struct file *file,
-					char __user *buffer, size_t count,
-					loff_t *data)
+					   char __user *buffer, size_t count,
+					   loff_t *data)
 {
 	return sprintf(buffer, "unsupported to read\n");
 }
 
 static ssize_t bluesleep_write_proc_btwrite(struct file *file,
-					const char __user *buffer,
-					size_t count, loff_t *data)
+					    const char __user *buffer,
+					    size_t count, loff_t *data)
 {
 	char b;
 
@@ -134,7 +135,8 @@ static int irq_init_input(struct rfkill_cix_platform_data *rfkill)
 	int ret;
 	rfkill->input = devm_input_allocate_device(&rfkill->pdev->dev);
 	if (!rfkill->input) {
-		dev_err(&rfkill->pdev->dev, "%s: fail to allocate input device\n", __func__);
+		dev_err(&rfkill->pdev->dev,
+			"%s: fail to allocate input device\n", __func__);
 		return -ENOMEM;
 	}
 	rfkill->input->name = dev_name(&rfkill->pdev->dev);
@@ -148,7 +150,6 @@ static int irq_init_input(struct rfkill_cix_platform_data *rfkill)
 	}
 	return 0;
 }
-
 
 static irqreturn_t rfkill_wake_host_irq(int irq, void *dev)
 {
@@ -175,9 +176,10 @@ static int rfkill_setup_wake_irq(struct rfkill_cix_platform_data *rfkill)
 
 	rfkill->rfkill_irq = gpiod_to_irq(rfkill->gpiod_wake_host);
 
-	ret = devm_request_irq(&rfkill->pdev->dev, rfkill->rfkill_irq, rfkill_wake_host_irq,
-				GPIO_WAKE_HOST > 0 ? IRQF_TRIGGER_RISING : IRQF_TRIGGER_FALLING,
-				rfkill->name, rfkill);
+	ret = devm_request_irq(
+		&rfkill->pdev->dev, rfkill->rfkill_irq, rfkill_wake_host_irq,
+		GPIO_WAKE_HOST > 0 ? IRQF_TRIGGER_RISING : IRQF_TRIGGER_FALLING,
+		rfkill->name, rfkill);
 	if (ret) {
 		return ret;
 	}
@@ -237,7 +239,8 @@ static int rfkill_create_proc(struct rfkill_cix_platform_data *rfkill)
 	}
 
 	/* read/write proc entries */
-	ent = proc_create("btwrite", 0444, rfkill->sleep_dir, &bluesleep_btwrite);
+	ent = proc_create("btwrite", 0444, rfkill->sleep_dir,
+			  &bluesleep_btwrite);
 	if (!ent) {
 		LOG("Unable to create /proc/%s/btwrite entry", PROC_DIR);
 		ret = -ENOMEM;
@@ -251,24 +254,26 @@ fail_create:
 }
 
 static int bluetooth_platdata_parse_dt(struct device *dev,
-				   struct rfkill_cix_platform_data *data)
+				       struct rfkill_cix_platform_data *data)
 {
 	memset(data, 0, sizeof(*data));
 
-
-	data->gpiod_reset = devm_gpiod_get_optional(dev, "BT,reset", GPIOD_OUT_HIGH);
+	data->gpiod_reset =
+		devm_gpiod_get_optional(dev, "BT,reset", GPIOD_OUT_HIGH);
 	if (IS_ERR(data->gpiod_reset) || data->gpiod_reset == NULL) {
 		LOG("Failed to get BT,reset-gpios gpio.\n");
 		return PTR_ERR(data->gpiod_reset);
 	}
 	LOG("success to get BT,reset-gpios gpio.\n");
-	data->gpiod_wake_bt = devm_gpiod_get_optional(dev, "BT,wake", GPIOD_OUT_HIGH);
+	data->gpiod_wake_bt =
+		devm_gpiod_get_optional(dev, "BT,wake", GPIOD_OUT_HIGH);
 	if (IS_ERR(data->gpiod_wake_bt) || data->gpiod_wake_bt == NULL) {
 		LOG("BT,wake-gpios not used.\n");
 		data->gpiod_wake_bt = NULL;
 	}
 
-	data->gpiod_wake_host = devm_gpiod_get_optional(dev, "BT,wake_host_irq", GPIOD_IN);
+	data->gpiod_wake_host =
+		devm_gpiod_get_optional(dev, "BT,wake_host_irq", GPIOD_IN);
 	if (IS_ERR(data->gpiod_wake_host) || data->gpiod_wake_host == NULL) {
 		LOG("BT,wake_host_irq-gpios not used.\n");
 		data->gpiod_wake_host = NULL;
@@ -285,8 +290,9 @@ static int rfkill_cix_probe(struct platform_device *pdev)
 	DBG("Enter %s\n", __func__);
 
 	if (!pdata) {
-		pdata = devm_kzalloc(&pdev->dev, sizeof(struct rfkill_cix_platform_data),
-					GFP_KERNEL);
+		pdata = devm_kzalloc(&pdev->dev,
+				     sizeof(struct rfkill_cix_platform_data),
+				     GFP_KERNEL);
 		if (!pdata)
 			return -ENOMEM;
 
@@ -311,7 +317,7 @@ static int rfkill_cix_probe(struct platform_device *pdev)
 
 	DBG("setup rfkill\n");
 	pdata->rfkill_dev = rfkill_alloc(pdata->name, &pdev->dev, pdata->type,
-					&rfkill_cix_ops, pdata);
+					 &rfkill_cix_ops, pdata);
 	if (!pdata->rfkill_dev)
 		goto fail_alloc;
 
@@ -326,7 +332,7 @@ static int rfkill_cix_probe(struct platform_device *pdev)
 	LOG("%s device registered.\n", pdata->name);
 
 	ret = irq_init_input(pdata);
-	if(!ret)
+	if (!ret)
 		LOG("%s irq_init_input registered.\n", pdata->name);
 	else
 		LOG("%s irq_init_input unregistered.\n", pdata->name);
@@ -345,7 +351,7 @@ fail_setup_wake_irq:
 	return ret;
 }
 
-static int rfkill_cix_remove(struct platform_device *pdev)
+static void rfkill_cix_remove(struct platform_device *pdev)
 {
 	struct rfkill_cix_platform_data *pdata = platform_get_drvdata(pdev);
 
@@ -357,8 +363,6 @@ static int rfkill_cix_remove(struct platform_device *pdev)
 	rfkill_free_wake_irq(pdata);
 
 	devm_kfree(&pdev->dev, pdata);
-
-	return 0;
 }
 
 static void rfkill_cix_shutdown(struct platform_device *pdev)
@@ -376,8 +380,8 @@ static struct of_device_id bt_platdata_of_match[] = {
 MODULE_DEVICE_TABLE(of, bt_platdata_of_match);
 
 static const struct acpi_device_id rfkill_acpi_ids[] = {
-	{"CIXH7200", 0 },
-	{ },
+	{ "CIXH7200", 0 },
+	{},
 };
 MODULE_DEVICE_TABLE(acpi, rfkill_acpi_ids);
 
