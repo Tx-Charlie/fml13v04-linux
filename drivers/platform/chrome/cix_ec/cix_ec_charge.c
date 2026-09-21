@@ -92,7 +92,7 @@ static int cix_ec_charge_probe(struct platform_device *pdev)
 	data->ec = ec;
 	psy_cfg.drv_data = data;
 	platform_set_drvdata(pdev, data);
-	data->charge = power_supply_register_no_ws(&pdev->dev, &charge_desc,
+	data->charge = power_supply_register(&pdev->dev, &charge_desc,
 						    &psy_cfg);
 	if (IS_ERR(data->charge))
 		return PTR_ERR(data->charge);

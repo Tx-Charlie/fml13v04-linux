@@ -204,7 +204,7 @@ static int cix_ec_battery_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	data->battery = power_supply_register_no_ws(&pdev->dev, &battery_desc,
+	data->battery = power_supply_register(&pdev->dev, &battery_desc,
 						    &psy_cfg);
 	if (IS_ERR(data->battery))
 		return PTR_ERR(data->battery);

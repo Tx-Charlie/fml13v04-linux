@@ -109,7 +109,7 @@ static void sky1_hwspinlock_remove(struct platform_device *pdev)
 	ret = hwspin_lock_unregister(&hwspin->bank);
 	if (ret) {
 		dev_err(&pdev->dev, "%s failed: %d\n", __func__, ret);
-		return ret;
+		return;
 	}
 
 	pm_runtime_disable(&pdev->dev);
