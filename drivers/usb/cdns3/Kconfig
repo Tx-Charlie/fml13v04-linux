@@ -115,23 +115,31 @@ endif # USB_CDNS3
 endif # USB_CDNS_SUPPORT
 config USB_CDNSP
 	tristate "Cadence USBSSP Dual-Role Controller"
+	depends on USB_CDNS_SUPPORT
+	help
 	  Say Y here if your system has a Cadence USBSSP dual-role controller.
+	  It supports: dual-role switch, Host-only, and Peripheral-only.
+
 	  If you choose to build this driver is a dynamically linked
 	  as module, the module will be called cdnsp.ko.
-if USB_CDNSP
-	bool "Cadence USBSSP device controller"
-	depends on USB_GADGET=y || USB_GADGET=USB_CDNSP
-	  Cadence USBSSP-DEV driver.
-	  This controller supports FF, HS, SS, SSP mode. It doesn't support
-	  LS mode.
-	bool "Cadence USB3 host controller"
-	depends on USB=y || USB=USB_CDNSP
-	  Host controller is compliant with XHCI so it will uses
+
 config USB_CDNSP_PCI_WRAP
 	tristate "PCI base on Cadence CDNSP Dual-Role Controller"
+	depends on USB_PCI && ACPI
 	default USB_CDNSP
+	help
+	  If you're using the USBSSP Core IP with a PCIe, please say
+	  'Y' or 'M' here.
+
+	  If you choose to build this driver as module it will
+	  be dynamically linked and module will be called cdnsp-pci.ko
+
 config USB_CDNSP_SKY1
 	tristate "sky1 base on Cadence CDNSP Dual-Role Controller"
 	depends on OF || COMPILE_TEST
+	help
 	  Say Y here if sky1 has a Cadence CDNSP dual-role controller.
+
+	  If you choose to build this driver is a dynamically linked
 	  module, the module will be called cdnsp-sky1.ko.
+
