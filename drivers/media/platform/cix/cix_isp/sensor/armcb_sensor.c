@@ -361,10 +361,9 @@ static int imgsens_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int imgsens_remove(struct platform_device *pdev)
+static void imgsens_remove(struct platform_device *pdev)
 {
 	armcb_cam_instance_destroy();
-	return 0;
 }
 #else
 static int imgsens_probe(struct i2c_client    *client)

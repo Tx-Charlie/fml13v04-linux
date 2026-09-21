@@ -11,7 +11,6 @@
 #include <linux/platform_device.h>
 #include <linux/acpi.h>
 
-#include "mailbox.h"
 
 /* Register define */
 #define REG_MSG(n)		(0x0 + 0x4*(n)) /* 0x0~0x7c */
@@ -411,7 +410,7 @@ static int cix_mbox_startup(struct mbox_chan *chan)
 	switch (cp->type) {
 	case CIX_MBOX_TYPE_DB:
 		/* Overwrite txdone_method for DB channel */
-		chan->txdone_method = TXDONE_BY_ACK;
+		chan->txdone_method = MBOX_TXDONE_BY_ACK;
 		fallthrough;
 	case CIX_MBOX_TYPE_REG:
 		if (priv->dir == MBOX_TX) {
@@ -603,13 +602,12 @@ static int cix_mbox_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cix_mbox_remove(struct platform_device *pdev)
+static void cix_mbox_remove(struct platform_device *pdev)
 {
 	struct cix_mbox_priv *priv = platform_get_drvdata(pdev);
 
 	dev_err(priv->dev, "cix mbox removed!\n");
 
-	return 0;
 }
 
 static const struct of_device_id cix_mbox_dt_ids[] = {

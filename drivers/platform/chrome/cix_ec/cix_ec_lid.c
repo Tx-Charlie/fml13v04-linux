@@ -207,14 +207,13 @@ static int cix_ec_lid_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cix_ec_lid_remove(struct platform_device *pdev)
+static void cix_ec_lid_remove(struct platform_device *pdev)
 {
 	struct cros_ec_device *ec = dev_get_drvdata(pdev->dev.parent);
 
 	blocking_notifier_chain_unregister(&ec->event_notifier,
 					   &cix_ec_notifier);
 	input_unregister_device(ec_lid_dev->lid_input);
-	return 0;
 }
 
 #ifdef CONFIG_OF

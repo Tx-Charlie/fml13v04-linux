@@ -99,7 +99,7 @@ static int cix_ec_kb_backlight_probe(struct platform_device *pdev)
 	return rc;
 }
 
-static int cix_ec_kb_backlight_remove(struct platform_device *pdev)
+static void cix_ec_kb_backlight_remove(struct platform_device *pdev)
 {
 	struct cix_ec_kb_data *cix_ec_kb_data = platform_get_drvdata(pdev);
 	struct cros_ec_device *ec;
@@ -107,7 +107,6 @@ static int cix_ec_kb_backlight_remove(struct platform_device *pdev)
 	ec = cix_ec_kb_data->ec;
 	devm_led_classdev_unregister(&pdev->dev, &cix_ec_kb_data->led_dev);
 
-	return 0;
 }
 
 #ifdef CONFIG_OF

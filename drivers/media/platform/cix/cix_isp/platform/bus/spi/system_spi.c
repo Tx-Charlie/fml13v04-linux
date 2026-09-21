@@ -540,7 +540,7 @@ remove_master:
  *
  * Return:	0 on success and error value on error
  */
-static int armcb_spi_remove(struct platform_device *pdev)
+static void armcb_spi_remove(struct platform_device *pdev)
 {
 #ifndef QEMU_ON_VEXPRESS
 	struct spi_master *master = platform_get_drvdata(pdev);
@@ -555,7 +555,6 @@ static int armcb_spi_remove(struct platform_device *pdev)
 
 	spi_unregister_master(master);
 #endif
-	return 0;
 }
 
 /**

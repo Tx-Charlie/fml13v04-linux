@@ -212,11 +212,10 @@ static int cix_ec_battery_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cix_ec_battery_remove(struct platform_device *pdev)
+static void cix_ec_battery_remove(struct platform_device *pdev)
 {
 	struct cix_ec_battery_data *data = platform_get_drvdata(pdev);
 	power_supply_unregister(data->battery);
-	return 0;
 }
 
 static const struct of_device_id cix_ec_battery_of_match[] = {

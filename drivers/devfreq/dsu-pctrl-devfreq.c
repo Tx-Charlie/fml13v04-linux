@@ -50,7 +50,7 @@
 #include <linux/slab.h>
 #include <linux/workqueue.h>
 
-#include "governor.h"
+#include <linux/devfreq-governor.h>
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/dsu_pctrl.h>
@@ -865,7 +865,7 @@ failed:
 	return ret;
 }
 
-static int dsu_pctrl_devfreq_remove(struct platform_device *pdev)
+static void dsu_pctrl_devfreq_remove(struct platform_device *pdev)
 {
 	struct dsu_pctrl *dsu = platform_get_drvdata(pdev);
 	int ret = 0;
@@ -885,7 +885,6 @@ static int dsu_pctrl_devfreq_remove(struct platform_device *pdev)
 	devm_devfreq_remove_device(&pdev->dev, dsu->devfreq);
 	dsu_pctrl_remove_opps(pdev);
 
-	return ret;
 }
 
 MODULE_DEVICE_TABLE(of, dsu_pctrl_devfreq_id);

@@ -101,7 +101,7 @@ reg_fail:
 	return ret;
 }
 
-static int sky1_hwspinlock_remove(struct platform_device *pdev)
+static void sky1_hwspinlock_remove(struct platform_device *pdev)
 {
 	struct sky1_hwspinlock *hwspin = platform_get_drvdata(pdev);
 	int ret;
@@ -116,7 +116,6 @@ static int sky1_hwspinlock_remove(struct platform_device *pdev)
 
 	iounmap(hwspin->io_base);
 
-	return 0;
 }
 
 static const struct of_device_id sky1_hwpinlock_ids[] = {

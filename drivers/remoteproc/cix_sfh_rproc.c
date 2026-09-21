@@ -1293,7 +1293,7 @@ static const struct of_device_id cix_sfh_rproc_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, cix_sfh_rproc_of_match);
 
-static int cix_sfh_rproc_remove(struct platform_device *pdev)
+static void cix_sfh_rproc_remove(struct platform_device *pdev)
 {
 	struct rproc *rproc = platform_get_drvdata(pdev);
 	struct cix_sfh_rproc *rproc_priv = rproc->priv;
@@ -1324,7 +1324,6 @@ static int cix_sfh_rproc_remove(struct platform_device *pdev)
 	}
 	rproc_free(rproc);
 
-	return 0;
 }
 
 static struct platform_driver cix_sfh_rproc_driver = {

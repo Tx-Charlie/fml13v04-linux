@@ -1970,7 +1970,7 @@ exit_ret:
 	return ret;
 }
 
-static int armcb_v4l2_config_remove(struct platform_device *pdev)
+static void armcb_v4l2_config_remove(struct platform_device *pdev)
 {
 	int ret = 0;
 
@@ -1986,7 +1986,6 @@ static int armcb_v4l2_config_remove(struct platform_device *pdev)
 	}
 	p_v4l_config_dev = NULL;
 
-	return ret;
 }
 
 static const struct of_device_id armcb_v4l2_config_dt_match[] = {

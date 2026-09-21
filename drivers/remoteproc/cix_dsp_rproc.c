@@ -1056,7 +1056,7 @@ err_wkq:
 	return ret;
 }
 
-static int cix_dsp_rproc_remove(struct platform_device *pdev)
+static void cix_dsp_rproc_remove(struct platform_device *pdev)
 {
 	struct rproc *rproc = platform_get_drvdata(pdev);
 	struct cix_dsp_rproc *rproc_priv = rproc->priv;
@@ -1071,7 +1071,6 @@ static int cix_dsp_rproc_remove(struct platform_device *pdev)
 	destroy_workqueue(rproc_priv->workqueue);
 	rproc_free(rproc);
 
-	return 0;
 }
 
 static int cix_dsp_rproc_runtime_suspend(struct device *dev)

@@ -113,12 +113,11 @@ static int csi_rcsu_hw_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int csi_rcsu_hw_remove(struct platform_device *pdev)
+static void csi_rcsu_hw_remove(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 
 	dev_info(dev, "csi rcsu hw remove enter\n");
-	return 0;
 }
 
 static struct platform_driver csi_rcsu_hw_driver = {

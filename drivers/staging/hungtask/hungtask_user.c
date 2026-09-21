@@ -188,7 +188,7 @@ ssize_t htuser_list_show(struct kobject *kobj,
 	}
 	spin_unlock(&userlist_lock);
 	pr_info("%s\n", tmp);
-	strncpy(buf, tmp, len);
+	strscpy(buf, tmp, len);
 
 	return len;
 }
@@ -243,7 +243,7 @@ ssize_t htuser_list_store(struct kobject *kobj,
 	memset(tmp, 0, sizeof(tmp));
 	p = memchr(buf, '\n', count);
 	len = p ? (size_t)(p - buf) : count;
-	strncpy(tmp, buf, len);
+	strscpy(tmp, buf, len);
 
 	if (strncmp(tmp, "on", CMD_MIN_LEN) == 0) {
 		if (htuser_list_store_on(tmp, len, pid))

@@ -50,7 +50,7 @@ static int cix_ec_charge_get_property(struct power_supply *psy,
 	if (ret < 0) {
 		return -EINVAL;
 	}
-	strncpy(data->name, resp->name, 7);
+	strscpy(data->name, resp->name, 7);
 
 	switch (psp) {
 	case POWER_SUPPLY_PROP_MODEL_NAME:
@@ -100,11 +100,10 @@ static int cix_ec_charge_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cix_ec_charge_remove(struct platform_device *pdev)
+static void cix_ec_charge_remove(struct platform_device *pdev)
 {
 	struct cix_ec_charge_data *data = platform_get_drvdata(pdev);
 	power_supply_unregister(data->charge);
-	return 0;
 }
 
 static const struct of_device_id cix_ec_charge_of_match[] = {
