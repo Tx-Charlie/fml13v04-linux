@@ -235,7 +235,7 @@ dbg_free:
     return ret;
 }
 
-static int linlon_aeu_remove(struct platform_device *pdev)
+static void linlon_aeu_remove(struct platform_device *pdev)
 {
     struct linlon_aeu_device *adev = platform_get_drvdata(pdev);
 
@@ -248,7 +248,6 @@ static int linlon_aeu_remove(struct platform_device *pdev)
     linlon_aeu_device_destroy(adev);
     of_reserved_mem_device_release(&pdev->dev);
     pm_runtime_disable(&pdev->dev);
-    return 0;
 }
 
 #if defined(CONFIG_PM)

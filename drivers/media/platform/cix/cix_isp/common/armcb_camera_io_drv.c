@@ -1177,17 +1177,15 @@ static int armcb_ispmem_probe(struct platform_device *pdev)
 	return res;
 }
 
-static int armcb_ispmem_remove(struct platform_device *pdev)
+static void armcb_ispmem_remove(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
-	int ret = 0;
 
 	ispmem_cma_free_all();
-	ret = cam_mem_release_all();
+	cam_mem_release_all();
 	pm_runtime_disable(dev);
 	mutex_destroy(&buf_tbl.m_lock);
 	misc_deregister(&ispmem_misc);
-	return ret;
 }
 
 static const struct of_device_id armcb_ispmem_dt_match[] = {
@@ -1320,7 +1318,7 @@ MODULE_ALIAS("platform:armchina");
 MODULE_DESCRIPTION("Arm China ispmem driver");
 MODULE_LICENSE("GPL v2");
 #else
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");
 static void *g_instance;
 
 void *armcb_get_cam_io_drv_instance(void)

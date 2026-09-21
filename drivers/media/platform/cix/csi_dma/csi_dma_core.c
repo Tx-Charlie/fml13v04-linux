@@ -695,7 +695,7 @@ err_unreg_v4l2_dev:
 	return ret;
 }
 
-static int csi_dma_remove(struct platform_device *pdev)
+static void csi_dma_remove(struct platform_device *pdev)
 {
 	struct csi_dma_dev *csi_dma = platform_get_drvdata(pdev);
 
@@ -716,7 +716,6 @@ static int csi_dma_remove(struct platform_device *pdev)
 	pm_runtime_disable(&pdev->dev);
 	dev_info(csi_dma->dev, "csi_dma remove\n");
 
-	return 0;
 }
 
 #ifdef CONFIG_PM
