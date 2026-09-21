@@ -198,7 +198,7 @@ err_phy3_init:
 	return ret;
 }
 
-static int cdnsp_remove(struct platform_device *pdev)
+static void cdnsp_remove(struct platform_device *pdev)
 {
 	struct cdns *cdns = platform_get_drvdata(pdev);
 	struct device *dev = cdns->dev;
@@ -210,7 +210,6 @@ static int cdnsp_remove(struct platform_device *pdev)
 	set_phy_power_off(cdns);
 	phy_exit(cdns->usb2_phy);
 	phy_exit(cdns->usb3_phy);
-	return 0;
 }
 #ifdef CONFIG_PM
 
