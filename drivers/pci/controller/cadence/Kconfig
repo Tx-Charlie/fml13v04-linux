@@ -93,6 +93,3 @@ config PCI_J721E_EP
 	  core.
 
 endmenu
-config PCI_SKY1
-	bool
-
