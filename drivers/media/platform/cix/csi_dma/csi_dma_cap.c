@@ -498,8 +498,6 @@ static const struct vb2_ops sky1_cap_vb2_qops = {
 	.queue_setup = cap_vb2_queue_setup,
 	.buf_prepare = cap_vb2_buffer_prepare,
 	.buf_queue = cap_vb2_buffer_queue,
-	.wait_prepare = vb2_ops_wait_prepare,
-	.wait_finish = vb2_ops_wait_finish,
 	.start_streaming = cap_vb2_start_streaming,
 	.stop_streaming = cap_vb2_stop_streaming,
 };
@@ -645,7 +643,7 @@ static int csi_dma_cap_enum_fmt(struct file *file, void *priv,
 
 	fmt = &csi_dma_src_formats[f->index];
 
-	strncpy(f->description, fmt->name, sizeof(f->description) - 1);
+	strscpy(f->description, fmt->name, sizeof(f->description) - 1);
 
 	f->pixelformat = fmt->fourcc;
 

@@ -335,6 +335,7 @@ static int mipi_csi2_s_power(struct v4l2_subdev *sd, int on)
 
 static int
 mipi_csi2_g_frame_interval(struct v4l2_subdev *sd,
+			   struct v4l2_subdev_state *sd_state,
 			   struct v4l2_subdev_frame_interval *interval)
 {
 	struct csi2rx_priv *csi2rx = v4l2_subdev_to_csi2rx(sd);
@@ -344,11 +345,12 @@ mipi_csi2_g_frame_interval(struct v4l2_subdev *sd,
 	if (!sen_sd)
 		return -EINVAL;
 
-	return v4l2_subdev_call(sen_sd, video, g_frame_interval, interval);
+	return v4l2_subdev_call(sen_sd, pad, get_frame_interval, NULL, interval);
 }
 
 static int
 mipi_csi2_s_frame_interval(struct v4l2_subdev *sd,
+			   struct v4l2_subdev_state *sd_state,
 			   struct v4l2_subdev_frame_interval *interval)
 {
 	struct csi2rx_priv *csi2rx = v4l2_subdev_to_csi2rx(sd);
@@ -358,7 +360,7 @@ mipi_csi2_s_frame_interval(struct v4l2_subdev *sd,
 	if (!sen_sd)
 		return -EINVAL;
 
-	return v4l2_subdev_call(sen_sd, video, s_frame_interval, interval);
+	return v4l2_subdev_call(sen_sd, pad, set_frame_interval, NULL, interval);
 }
 
 void mipi_csi2_enable_irq(struct csi2rx_priv *csi2rx)
@@ -871,6 +873,8 @@ static const struct v4l2_subdev_pad_ops mipi_csi2_pad_ops = {
 	.enum_frame_size = mipi_csi2_enum_framesizes,
 	.enum_frame_interval = mipi_csi2_enum_frame_interval,
 	.get_fmt = mipi_csi2_get_fmt,
+	.get_frame_interval = mipi_csi2_g_frame_interval,
+	.set_frame_interval = mipi_csi2_s_frame_interval,
 };
 
 static const struct v4l2_subdev_core_ops mipi_csi2_core_ops = {
@@ -878,9 +882,7 @@ static const struct v4l2_subdev_core_ops mipi_csi2_core_ops = {
 };
 
 static const struct v4l2_subdev_video_ops mipi_csi2_video_ops = {
-	.g_frame_interval = mipi_csi2_g_frame_interval,
 	.s_stream = mipi_csi2_s_stream,
-	.s_frame_interval = mipi_csi2_s_frame_interval,
 };
 
 static const struct v4l2_subdev_ops mipi_csi2_subdev_ops = {
@@ -1112,7 +1114,7 @@ static int mipi_csi2_probe(struct platform_device *pdev)
 	return ret;
 }
 
-static int mipi_csi2_remove(struct platform_device *pdev)
+static void mipi_csi2_remove(struct platform_device *pdev)
 {
 	struct csi2rx_priv *csi2rx = platform_get_drvdata(pdev);
 	struct v4l2_subdev *sd = &csi2rx->subdev;
@@ -1132,7 +1134,6 @@ static int mipi_csi2_remove(struct platform_device *pdev)
 
 	pm_runtime_disable(dev);
 
-	return 0;
 }
 
 struct mipi_csi2_info mipi_csi2_hw_info = {
