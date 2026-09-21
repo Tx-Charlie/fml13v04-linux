@@ -27,6 +27,7 @@
 #include <drm/drm_simple_kms_helper.h>
 
 #include <linux/clk.h>
+#include <linux/debugfs.h>
 #include <linux/delay.h>
 #include <linux/device.h>
 #include <linux/module.h>
@@ -376,7 +377,7 @@ trilin_dp_connector_best_encoder(struct drm_connector *connector)
 
 enum drm_mode_status
 trilin_dp_connector_mode_valid(struct drm_connector *connector,
-			       struct drm_display_mode *mode)
+			       const struct drm_display_mode *mode)
 {
 	struct trilin_dp *dp = connector_to_dp(connector);
 	//struct trilin_connector *conn = connector_to_trilin(connector);

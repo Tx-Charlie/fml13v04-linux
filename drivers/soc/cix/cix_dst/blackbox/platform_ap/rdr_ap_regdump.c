@@ -41,7 +41,7 @@ int regsdump_init(struct platform_device *pdev, struct rdr_safemem_pool *pool)
 			goto ioinit_fail;
 		}
 
-		strncpy(regs[i].name, res->name, REG_NAME_LEN - 1);
+		strscpy(regs[i].name, res->name, REG_NAME_LEN - 1);
 		regs[i].name[REG_NAME_LEN - 1] = '\0';
 		regs[i].paddr = res->start;
 		regs[i].size = resource_size(res);
