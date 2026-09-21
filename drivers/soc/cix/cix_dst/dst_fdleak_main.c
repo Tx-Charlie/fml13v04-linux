@@ -332,7 +332,7 @@ static int fdleak_get_stack(void __user *arg)
 
 	info->is_32bit = fdleak_table[info->wpid].is_32bit[idx_pid];
 	info->probe_cnt = fdleak_table[info->wpid].probe_cnt;
-	strncpy(info->wp_name, fdleak_table[info->wpid].name,
+	strscpy(info->wp_name, fdleak_table[info->wpid].name,
 		sizeof(info->wp_name) - 1);
 	info->wp_name[sizeof(info->wp_name) - 1] = '\0';
 

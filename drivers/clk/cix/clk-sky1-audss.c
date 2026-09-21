@@ -1146,7 +1146,7 @@ fail_clks_set:
 	return ret;
 }
 
-static int sky1_audss_clk_remove(struct platform_device *pdev)
+static void sky1_audss_clk_remove(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct sky1_audss_clks_priv *priv = dev_get_drvdata(dev);
@@ -1157,8 +1157,6 @@ static int sky1_audss_clk_remove(struct platform_device *pdev)
 		pm_runtime_force_suspend(dev);
 
 	pm_runtime_disable(dev);
-
-	return 0;
 }
 
 static int __maybe_unused sky1_audss_clk_runtime_suspend(struct device *dev)
