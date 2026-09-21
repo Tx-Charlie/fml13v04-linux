@@ -5,19 +5,18 @@
 #include <linux/acpi.h>
 #include <linux/reset.h>
 #include <linux/kernel.h>
+#include <linux/module.h>
 #include <linux/of_platform.h>
+#include <linux/platform_device.h>
 
 static const struct acpi_device_id cix_usb2phy_acpi_match[] = {
 	{ "CIXH2032" },
-	{ },
+	{},
 };
 MODULE_DEVICE_TABLE(acpi, cix_usb2phy_acpi_match);
 
 static const struct of_device_id cix_usb2phy_dt_match[] = {
-	{
-		.compatible = "cix,sky1-usb2-phy",
-		.data = NULL
-	},
+	{ .compatible = "cix,sky1-usb2-phy", .data = NULL },
 	{ /* sentinel */ }
 };
 

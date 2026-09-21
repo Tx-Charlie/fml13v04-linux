@@ -10,7 +10,9 @@
 #include <sound/soc.h>
 
 #define DUMMY_RATES SNDRV_PCM_RATE_8000_192000
-#define DUMMY_FMT   SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE | SNDRV_PCM_FMTBIT_S32_LE
+#define DUMMY_FMT                                           \
+	SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE | \
+		SNDRV_PCM_FMTBIT_S32_LE
 
 static const struct snd_soc_dapm_widget dummy_widgets[] = {
 	SND_SOC_DAPM_INPUT("RX"),
@@ -60,29 +62,31 @@ static struct snd_soc_dai_driver dummy_dai[] = {
 };
 
 static const struct snd_soc_component_driver soc_component_dev_dummy = {
-	.dapm_widgets		= dummy_widgets,
-	.num_dapm_widgets	= ARRAY_SIZE(dummy_widgets),
-	.dapm_routes		= dummy_routes,
-	.num_dapm_routes	= ARRAY_SIZE(dummy_routes),
-	.idle_bias_on		= 1,
-	.use_pmdown_time	= 1,
-	.endianness		= 1,
+	.dapm_widgets = dummy_widgets,
+	.num_dapm_widgets = ARRAY_SIZE(dummy_widgets),
+	.dapm_routes = dummy_routes,
+	.num_dapm_routes = ARRAY_SIZE(dummy_routes),
+	.idle_bias_on = 1,
+	.use_pmdown_time = 1,
+	.endianness = 1,
 };
 
 static int dummy_probe(struct platform_device *pdev)
 {
 	return devm_snd_soc_register_component(&pdev->dev,
-				      &soc_component_dev_dummy,
-				      dummy_dai, ARRAY_SIZE(dummy_dai));
+					       &soc_component_dev_dummy,
+					       dummy_dai,
+					       ARRAY_SIZE(dummy_dai));
 }
 
-static int dummy_remove(struct platform_device *pdev)
+static void dummy_remove(struct platform_device *pdev)
 {
-	return 0;
 }
 
 static const struct of_device_id dummy_codec_of_match[] = {
-	{ .compatible = "linux,dummy", },
+	{
+		.compatible = "linux,dummy",
+	},
 	{},
 };
 MODULE_DEVICE_TABLE(of, dummy_codec_of_match);
