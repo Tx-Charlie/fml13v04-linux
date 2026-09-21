@@ -10,7 +10,7 @@
 #include <drm/drm_atomic.h>
 #include <drm/drm_atomic_helper.h>
 #include <drm/drm_drv.h>
-#include <drm/drm_fb_helper.h>
+#include <drm/drm_fbdev_dma.h>
 #include <drm/drm_gem_dma_helper.h>
 #include <drm/drm_gem_framebuffer_helper.h>
 #include <drm/drm_managed.h>
@@ -64,7 +64,7 @@ static irqreturn_t linlondp_kms_irq_handler(int irq, void *data)
 
 static struct drm_driver linlondp_kms_driver = {
 	.driver_features = DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
-	.lastclose = drm_fb_helper_lastclose,
+	.fbdev_probe = drm_fbdev_dma_driver_fbdev_probe,
 	DRM_GEM_DMA_DRIVER_OPS_WITH_DUMB_CREATE(linlondp_gem_dma_dumb_create),
 	.fops = &linlondp_cma_fops,
 	.name = "linlondp",
@@ -74,7 +74,7 @@ static struct drm_driver linlondp_kms_driver = {
 	.minor = 0,
 };
 
-static void linlondp_kms_atomic_commit_hw_done(struct drm_atomic_state *state)
+static void linlondp_kms_atomic_commit_hw_done(struct drm_atomic_commit *state)
 {
 	struct drm_device *dev = state->dev;
 	struct linlondp_kms_dev *kms = to_kdev(dev);
@@ -101,7 +101,7 @@ static void linlondp_kms_atomic_commit_hw_done(struct drm_atomic_state *state)
 	drm_atomic_helper_commit_hw_done(state);
 }
 
-static void linlondp_kms_commit_tail(struct drm_atomic_state *old_state)
+static void linlondp_kms_commit_tail(struct drm_atomic_commit *old_state)
 {
 	struct drm_device *dev = old_state->dev;
 	bool fence_cookie = dma_fence_begin_signalling();
@@ -170,7 +170,7 @@ static int linlondp_plane_state_list_add(struct drm_plane_state *plane_st,
 static int linlondp_crtc_normalize_zpos(struct drm_crtc *crtc,
 					struct drm_crtc_state *crtc_st)
 {
-	struct drm_atomic_state *state = crtc_st->state;
+	struct drm_atomic_commit *state = crtc_st->state;
 	struct linlondp_crtc *kcrtc = to_kcrtc(crtc);
 	struct linlondp_crtc_state *kcrtc_st = to_kcrtc_st(crtc_st);
 	struct linlondp_plane_state *kplane_st;
@@ -257,7 +257,7 @@ static bool linlondp_vrr_match_mode(const struct drm_display_mode *mode1,
 }
 
 static int linlondp_kms_check(struct drm_device *dev,
-			      struct drm_atomic_state *state)
+			      struct drm_atomic_commit *state)
 {
 	struct drm_crtc *crtc;
 	struct drm_crtc_state *old_crtc_st, *new_crtc_st;

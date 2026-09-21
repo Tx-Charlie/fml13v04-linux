@@ -1851,8 +1851,7 @@ static int trilin_dp_ctrl_stream_off(struct trilin_dp *dp,
 	u32 regs_off = TRILIN_DPTX_SOURCE_OFFSET * dp_panel->stream_id;
 
 	if (dp->edp_panel) {
-		if (drm_panel_disable(dp->edp_panel))
-			DP_INFO("edp panel disable failed");
+		drm_panel_disable(dp->edp_panel);
 	}
 	/*reset infoframe*/
 	trilin_dp_write(dp, TRILIN_DPTX_SEC0_INFOFRAME_ENABLE + regs_off, 0);
@@ -2076,11 +2075,7 @@ static int trilin_dp_core_on(struct trilin_dp *dp, bool shallow)
 		dp->platform_id);
 
 	if (dp->edp_panel) {
-		rc = drm_panel_enable(dp->edp_panel);
-		if (rc) {
-			DP_INFO("edp panel disable failed but GO ON");
-			rc = 0;
-		}
+		drm_panel_enable(dp->edp_panel);
 	}
 	dp->state |= DP_STATE_INIT_TRAIN;
 	return rc;
@@ -2392,11 +2387,7 @@ int trilin_dp_host_init(struct trilin_dp *dp)
 	}
 
 	if (dp->edp_panel) {
-		rc = drm_panel_prepare(dp->edp_panel);
-		if (rc) {
-			DP_ERR("edp panel prepare failed");
-			goto err_out;
-		}
+		drm_panel_prepare(dp->edp_panel);
 		msleep(50);
 		dp->edp_panel_ready = true;
 	}
@@ -2441,8 +2432,7 @@ static void trilin_dp_host_deinit(struct trilin_dp *dp)
 		return;
 	}
 	if (dp->edp_panel) {
-		if (drm_panel_unprepare(dp->edp_panel))
-			DP_INFO("unprepare failed");
+		drm_panel_unprepare(dp->edp_panel);
 	}
 
 	if (phy->phy_ops)
@@ -2749,8 +2739,8 @@ int trilin_dp_pm_resume_early(struct trilin_dp *dp)
 	struct drm_connector *connector = &dp->connector.base;
 	struct drm_device *dev = connector->dev;
 	struct drm_modeset_acquire_ctx ctx;
-	struct drm_atomic_state *old_state = dev->mode_config.suspend_state;
-	struct drm_atomic_state *new_state = NULL;
+	struct drm_atomic_commit *old_state = dev->mode_config.suspend_state;
+	struct drm_atomic_commit *new_state = NULL;
 	struct drm_connector_state *conn_state;
 	struct drm_connector *conn;
 	int ret, i;
@@ -2786,13 +2776,13 @@ int trilin_dp_pm_resume_early(struct trilin_dp *dp)
 		drm_mode_prune_invalid(dev, &conn->modes, false);
 	}
 
-	drm_atomic_state_put(old_state);
+	drm_atomic_commit_put(old_state);
 	dev->mode_config.suspend_state = new_state;
 	new_state = NULL;
 
 state_put:
 	if (new_state)
-		drm_atomic_state_put(new_state);
+		drm_atomic_commit_put(new_state);
 unlock:
 	DRM_MODESET_LOCK_ALL_END(dev, ctx, ret);
 	return ret;
