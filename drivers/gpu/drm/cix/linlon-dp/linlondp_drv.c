@@ -12,7 +12,8 @@
 #include <drm/drm_fb_helper.h>
 #include <drm/drm_module.h>
 #include <drm/drm_of.h>
-#include <drm/drm_fbdev_generic.h>
+#include <drm/clients/drm_client_setup.h>
+#include <drm/drm_fbdev_dma.h>
 #include "linlondp_dev.h"
 #include "linlondp_kms.h"
 
@@ -79,7 +80,7 @@ static int linlondp_bind(struct device *dev)
 
 	dev_set_drvdata(dev, mdrv);
 	if (enable_fb)
-		drm_fbdev_generic_setup(&mdrv->kms->base, 32);
+		drm_client_setup(&mdrv->kms->base, NULL);
 
 	if (mdrv->mdev->enabled_by_gop)
 		pm_runtime_set_active(dev);

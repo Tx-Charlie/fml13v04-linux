@@ -446,7 +446,7 @@ enum drm_mode_status trilin_dp_mst_mode_valid(struct drm_connector *connector,
 
 static struct drm_encoder *
 trilin_mst_atomic_best_encoder(struct drm_connector *connector,
-			       struct drm_atomic_state *state)
+			       struct drm_atomic_commit *state)
 {
 	struct drm_connector_state *connector_state =
 		drm_atomic_get_new_connector_state(state, connector);
@@ -500,7 +500,7 @@ trilin_mst_atomic_best_encoder(struct drm_connector *connector,
 }
 
 static int trilin_dp_mst_conn_atomic_check(struct drm_connector *connector,
-					   struct drm_atomic_state *state)
+					   struct drm_atomic_commit *state)
 {
 	struct trilin_connector *conn = connector_to_trilin(connector);
 	struct trilin_dp *dp = conn->dp;
@@ -651,7 +651,7 @@ _dp_mst_encoders_pre_enable_part2(struct trilin_encoder *mst_encoder)
 	struct drm_dp_mst_topology_mgr *mgr = dp->mst_mgr;
 	struct trilin_connector *conn = mst_encoder->connector;
 	struct drm_dp_mst_port *port = conn->port;
-	struct drm_atomic_state *state = conn->state;
+	struct drm_atomic_commit *state = conn->state;
 
 	DP_MST_DEBUG("enter %p\n", state);
 
@@ -671,7 +671,7 @@ static void _dp_mst_encoders_pre_disable(struct trilin_encoder *mst_encoder)
 	struct trilin_connector *conn = mst_encoder->connector;
 	struct trilin_dp_mst_private *mst = &dp->mst.private_info;
 	struct drm_dp_mst_topology_mgr *mgr = dp->mst_mgr;
-	struct drm_atomic_state *state = conn->state;
+	struct drm_atomic_commit *state = conn->state;
 	struct drm_dp_mst_topology_state *old_mst_state, *new_mst_state,
 		*mst_state;
 	struct drm_dp_mst_atomic_payload *old_payload, *new_payload;
@@ -801,7 +801,7 @@ static int trilin_mst_encoder_atomic_check(struct drm_encoder *encoder,
 {
 	struct trilin_encoder *mst_encoder = encoder_to_trilin(encoder);
 	struct trilin_dp *dp = mst_encoder->dp;
-	struct drm_atomic_state *state = conn_state->state;
+	struct drm_atomic_commit *state = conn_state->state;
 	struct drm_connector *connector = conn_state->connector;
 	struct trilin_connector *conn = connector_to_trilin(connector);
 	struct drm_display_mode *adjusted_mode = &crtc_state->adjusted_mode;

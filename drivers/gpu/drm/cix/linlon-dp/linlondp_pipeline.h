@@ -584,11 +584,11 @@ int linlondp_release_unclaimed_resources(struct linlondp_pipeline *pipe,
 
 struct linlondp_pipeline_state *
 linlondp_pipeline_get_old_state(struct linlondp_pipeline *pipe,
-				struct drm_atomic_state *state);
+				struct drm_atomic_commit *state);
 bool linlondp_pipeline_disable(struct linlondp_pipeline *pipe,
-			       struct drm_atomic_state *old_state);
+			       struct drm_atomic_commit *old_state);
 void linlondp_pipeline_update(struct linlondp_pipeline *pipe,
-			      struct drm_atomic_state *old_state);
+			      struct drm_atomic_commit *old_state);
 
 void linlondp_complete_data_flow_cfg(struct linlondp_layer *layer,
 				     struct linlondp_data_flow_cfg *dflow,

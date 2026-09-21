@@ -46,7 +46,7 @@ void linlondp_crtc_get_color_config(struct drm_crtc_state *crtc_st,
 
 	/* connector doesn't config any color_format, use RGB444 as default */
 	if (!conn_color_formats)
-		conn_color_formats = DRM_COLOR_FORMAT_RGB444;
+		conn_color_formats = DRM_OUTPUT_COLOR_FORMAT_RGB444;
 
 	*color_depths = GENMASK(min_bpc, 0);
 	*color_formats = conn_color_formats;
@@ -84,7 +84,7 @@ linlondp_crtc_update_clock_ratio(struct linlondp_crtc_state *kcrtc_st)
  * Zero for success or -errno
  */
 static int linlondp_crtc_atomic_check(struct drm_crtc *crtc,
-				      struct drm_atomic_state *state)
+				      struct drm_atomic_commit *state)
 {
 	struct drm_crtc_state *crtc_state =
 		drm_atomic_get_new_crtc_state(state, crtc);
@@ -358,7 +358,7 @@ static void linlondp_crtc_do_flush(struct drm_crtc *crtc,
 }
 
 static void linlondp_crtc_atomic_enable(struct drm_crtc *crtc,
-					struct drm_atomic_state *state)
+					struct drm_atomic_commit *state)
 {
 	int err, repeat = 0;
 	struct drm_crtc_state *old = drm_atomic_get_old_crtc_state(state, crtc);
@@ -481,7 +481,7 @@ void linlondp_crtc_flush_and_wait_for_flip_done(
 }
 
 static void linlondp_crtc_atomic_disable(struct drm_crtc *crtc,
-					 struct drm_atomic_state *state)
+					 struct drm_atomic_commit *state)
 {
 	struct drm_crtc_state *old = drm_atomic_get_old_crtc_state(state, crtc);
 	struct drm_crtc_state *new_state = drm_atomic_get_new_crtc_state(state, crtc);
@@ -562,7 +562,7 @@ static void linlondp_crtc_atomic_disable(struct drm_crtc *crtc,
 }
 
 static void linlondp_crtc_atomic_flush(struct drm_crtc *crtc,
-				       struct drm_atomic_state *state)
+				       struct drm_atomic_commit *state)
 {
 	struct drm_crtc_state *crtc_state =
 		drm_atomic_get_new_crtc_state(state, crtc);

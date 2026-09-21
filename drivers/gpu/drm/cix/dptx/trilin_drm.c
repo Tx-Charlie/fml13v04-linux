@@ -145,7 +145,7 @@ bool trilin_dp_plugged_status(struct trilin_dp *dp)
 }
 
 static int trilin_dp_connector_atomic_check(struct drm_connector *conn,
-					    struct drm_atomic_state *state)
+					    struct drm_atomic_commit *state)
 {
 	struct drm_connector_state *new_con_state =
 		drm_atomic_get_new_connector_state(state, conn);
@@ -554,7 +554,7 @@ static const struct drm_connector_helper_funcs
  */
 static
 struct drm_crtc *get_crtc_from_encoder(struct drm_encoder *encoder,
-					  struct drm_atomic_state *state)
+					  struct drm_atomic_commit *state)
 {
 	struct drm_connector *connector;
 	struct drm_connector_state *conn_state;
@@ -571,7 +571,7 @@ struct drm_crtc *get_crtc_from_encoder(struct drm_encoder *encoder,
 }
 
 static bool trilin_dp_handle_psr_disable(struct drm_encoder *encoder,
-				struct drm_atomic_state *state)
+				struct drm_atomic_commit *state)
 {
 	struct drm_crtc *crtc;
 	struct drm_crtc_state *old_crtc_state;
@@ -642,7 +642,7 @@ static bool is_same_mode_compare(struct trilin_dp *dp,
 }
 
 static void trilin_dp_encoder_enable(struct drm_encoder *encoder,
-				struct drm_atomic_state *state)
+				struct drm_atomic_commit *state)
 {
 	struct trilin_dp *dp = encoder_to_dp(encoder);
 	struct trilin_dp_panel *dp_panel = &dp->dp_panel;
@@ -691,7 +691,7 @@ static void trilin_dp_encoder_enable(struct drm_encoder *encoder,
 }
 
 static void trilin_dp_encoder_disable(struct drm_encoder *encoder,
-				struct drm_atomic_state *state)
+				struct drm_atomic_commit *state)
 {
 	int rc;
 	struct trilin_dp *dp = encoder_to_dp(encoder);
@@ -767,14 +767,14 @@ static u8 trilin_dp_cal_bpp(u8 bpc, int format)
 	u8 bpp = bpc * 3;
 
 	switch (format) {
-	case DRM_COLOR_FORMAT_RGB444:
-	case DRM_COLOR_FORMAT_YCBCR444:
+	case DRM_OUTPUT_COLOR_FORMAT_RGB444:
+	case DRM_OUTPUT_COLOR_FORMAT_YCBCR444:
 		bpp = bpc * 3;
 		break;
-	case DRM_COLOR_FORMAT_YCBCR422:
+	case DRM_OUTPUT_COLOR_FORMAT_YCBCR422:
 		bpp = bpc * 2;
 		break;
-	case DRM_COLOR_FORMAT_YCBCR420:
+	case DRM_OUTPUT_COLOR_FORMAT_YCBCR420:
 		bpp = bpc * 3 / 2;
 		break;
 	default:
@@ -885,7 +885,7 @@ static bool compute_available_clock_rate(struct trilin_dp *dp,
 		struct drm_connector_state *connector_state, u8 suggest_bpc,
 		int clock, int color_format, int *rt_bpc, int *rt_bpp)
 {
-	int min_bpc = (color_format == DRM_COLOR_FORMAT_RGB444) ? 8 : 8;
+	int min_bpc = (color_format == DRM_OUTPUT_COLOR_FORMAT_RGB444) ? 8 : 8;
 	int bpc = max(suggest_bpc, min_bpc);
 	int bpp;
 	u8 max_lanes = dp->link_config.max_lanes;
@@ -927,13 +927,13 @@ int trilin_dp_encoder_compute_config(struct drm_encoder *encoder,
 	u8 max_lanes = dp->link_config.max_lanes;
 	int link_rate = max_rate;
 
-	// if (!(info_formats & DRM_COLOR_FORMAT_RGB444)) {
-	// 	info_formats |= DRM_COLOR_FORMAT_RGB444;
+	// if (!(info_formats & DRM_OUTPUT_COLOR_FORMAT_RGB444)) {
+	// 	info_formats |= DRM_OUTPUT_COLOR_FORMAT_RGB444;
 	// 	DP_WARN("info_format=%0x, force support RGB444", info->color_formats);
 	// }
 
 	const int COMMON_COLORS_FORMATS[] = {
-		DRM_COLOR_FORMAT_RGB444, DRM_COLOR_FORMAT_YCBCR422, DRM_COLOR_FORMAT_YCBCR420};
+		DRM_OUTPUT_COLOR_FORMAT_RGB444, DRM_OUTPUT_COLOR_FORMAT_YCBCR422, DRM_OUTPUT_COLOR_FORMAT_YCBCR420};
 
 	for (i = 0; i < ARRAY_SIZE(COMMON_COLORS_FORMATS); i++) {
 		color_format = COMMON_COLORS_FORMATS[i];
@@ -942,7 +942,7 @@ int trilin_dp_encoder_compute_config(struct drm_encoder *encoder,
 			success = compute_available_clock_rate(dp, connector_state, suggest_bpc,
 				adjusted_mode->clock, color_format, &bpc, &bpp);
 			if (success) {
-				if (color_format != DRM_COLOR_FORMAT_RGB444)
+				if (color_format != DRM_OUTPUT_COLOR_FORMAT_RGB444)
 					DP_INFO("Use YUV Format=0x%0x", color_format);
 				break;
 			}
@@ -956,13 +956,13 @@ int trilin_dp_encoder_compute_config(struct drm_encoder *encoder,
 	}
 
 	switch (color_format) {
-	case DRM_COLOR_FORMAT_YCBCR444:
+	case DRM_OUTPUT_COLOR_FORMAT_YCBCR444:
 		format = TRILIN_DPSUB_FORMAT_YCBCR444;
 		break;
-	case DRM_COLOR_FORMAT_YCBCR422:
+	case DRM_OUTPUT_COLOR_FORMAT_YCBCR422:
 		format = TRILIN_DPSUB_FORMAT_YCBCR422;
 		break;
-	case DRM_COLOR_FORMAT_YCBCR420:
+	case DRM_OUTPUT_COLOR_FORMAT_YCBCR420:
 		format = TRILIN_DPSUB_FORMAT_YCBCR420;
 		break;
 	default:
