@@ -79,9 +79,9 @@ static int __init parse_gop(char *arg)
 #ifdef CIX_GOP_RESOURCE_QUIRK
 	if (param_efifb_enable) {
 		/* For disbale GPIO, PWN and GPT timer when GOP enable. */
-		strncpy(forbidden_id_list_ext[0].id, "CIXH1003", 8);
-		strncpy(forbidden_id_list_ext[1].id, "CIXH2011", 8);
-		strncpy(forbidden_id_list_ext[2].id, "CIXH1007", 8);
+		strscpy(forbidden_id_list_ext[0].id, "CIXH1003", 8);
+		strscpy(forbidden_id_list_ext[1].id, "CIXH2011", 8);
+		strscpy(forbidden_id_list_ext[2].id, "CIXH1007", 8);
 		forbidden_id_list_ext[0].driver_data = 0;
 		forbidden_id_list_ext[1].driver_data = 0;
 		forbidden_id_list_ext[2].driver_data = 0;
@@ -92,75 +92,7 @@ static int __init parse_gop(char *arg)
 }
 early_param("efifb_enable", parse_gop);
 
-static void smmu_pcie_quirks(struct device *dev)
-{
-	struct arm_smmu_master *master;
-	struct iommu_domain *domain;
-	struct page *page = pcie_page;
-	unsigned long vaddr = 0x0;
-	int ret;
-	phys_addr_t paddr;
 
-	if (!dev)
-		return;
-
-	if (!dev_is_pci(dev))
-		return;
-
-	if (!page) {
-		dev_err(dev, "pcie page NULL\n");
-		return;
-	}
-
-	/*
-	 * iommu domain not ready in iommu_get_domain_for_dev() interface, so
-	 * get iommu domain from arm_smmu_master, which set as dev iommu priv.
-	 */
-	master = dev_iommu_priv_get(dev);
-	if (!master || !master->domain)
-		goto error;
-
-	domain = &master->domain->domain;
-
-	paddr = iommu_iova_to_phys(domain, vaddr);
-	if (paddr) /* already mapped */
-		return;
-
-	ret = iommu_map(domain, vaddr, __pfn_to_phys(page_to_pfn(page)),
-			PAGE_SIZE, IOMMU_READ | IOMMU_WRITE, GFP_KERNEL);
-	if (ret) {
-		dev_err(dev, "iommu map fail, ret[%d]", ret);
-		goto error;
-	}
-
-	dev_info(dev, "smmu pcie quirks dev[%s] done\n", dev_name(dev));
-
-	return;
-error:
-	dev_err(dev, "smmu pcie quirks dev[%s] fail\n", dev_name(dev));
-
-	return;
-}
-
-static int smmu_attach_notify(struct notifier_block *nb, unsigned long val,
-						      void *dev)
-{
-	switch (val) {
-	case SMMU_DEV_ATTACH:
-		smmu_pcie_quirks(dev);
-		break;
-	case SMMU_DEV_DETACH:
-		break;
-	default:
-		break;
-	}
-
-	return 0;
-}
-
-static struct notifier_block smmu_attach_nb = {
-	.notifier_call = smmu_attach_notify,
-};
 
 void cix_pcie_io_space_init(void)
 {
@@ -179,7 +111,7 @@ int cix_pcie_quirks_init(void)
 		return -ENOMEM;
 	}
 
-	return register_smmu_attach_notifier(&smmu_attach_nb);
+	return 0;
 }
 
 #ifdef CIX_GOP_RESOURCE_QUIRK

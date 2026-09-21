@@ -125,60 +125,10 @@ static const char *acpi_obj_to_devname(const union acpi_object *obj)
 static int reset_lookup_handle(acpi_handle handle,
 			const union acpi_object *obj, void *data)
 {
-	struct device *dev = data;
-	const union acpi_object *child, *el;
-	struct reset_control_lookup *lookup;
-	int i, pcnt, count = 0;
-	struct acpi_device *adev = acpi_fetch_acpi_dev(handle);
-
-	if (!adev || !adev->status.present)
-		return -ENODEV;
-
-	for (i = 0; i < obj->package.count; i++) {
-		child = &obj->package.elements[i];
-		pcnt = child->package.count;
-
-		/* package: <provider,ref>, <index>, <user,ref>, [<con-id>] */
-		if (pcnt < 3)
-			continue;
-
-		el = child->package.elements;
-
-		if ((el[0].type != ACPI_TYPE_LOCAL_REFERENCE
-			    && el[0].type != ACPI_TYPE_STRING)
-		    || (el[1].type != ACPI_TYPE_INTEGER)
-		    || (el[2].type != ACPI_TYPE_LOCAL_REFERENCE
-			    && el[2].type != ACPI_TYPE_STRING)
-		    || (pcnt > 3 && (el[3].type != ACPI_TYPE_STRING)))
-			continue;
-
-		lookup = devm_kzalloc(dev, sizeof(*lookup), GFP_KERNEL);
-		if (!lookup)
-			return -ENOMEM;
-		INIT_LIST_HEAD(&lookup->list);
-		lookup->provider = acpi_obj_to_devname(&el[0]);
-		lookup->index = el[1].integer.value;
-		lookup->dev_id = acpi_obj_to_devname(&el[2]);
-		lookup->con_id = pcnt > 3 ?
-			devm_kstrdup(dev, el[3].string.pointer, GFP_KERNEL)
-			: NULL;
-
-		if (!lookup->provider || (!lookup->dev_id && !lookup->con_id))
-			continue;
-
-		reset_controller_add_lookup(lookup, 1);
-
-		dev_dbg(&adev->dev,
-			"rst lookup: prov[%s] idx[%d] dev[%s] con[%s]\n",
-			lookup->provider, lookup->index,
-			lookup->dev_id, lookup->con_id);
-		count++;
-	}
-
-	dev_dbg(&adev->dev, "reset lookup handle done %d/%d",
-			count, obj->package.count);
-
-	return count;
+	/* The ACPI reset lookup depended on a vendor reset core extension
+	 * (struct reset_control_lookup / reset_controller_add_lookup) that
+	 * is not present on mainline 7.3. Skip it. */
+	return 0;
 }
 
 static int cma_init_reserved_memory(phys_addr_t base, phys_addr_t size,
@@ -216,7 +166,7 @@ static int cma_init_reserved_memory(phys_addr_t base, phys_addr_t size,
 	else
 		snprintf(cma->name, CMA_MAX_NAME,  "cma%d\n", cma_area_count);
 
-	cma->base_pfn = PFN_DOWN(base);
+	/* base_pfn field removed in 7.3; CMA base is tracked via ranges */
 	cma->count = size >> PAGE_SHIFT;
 	cma->order_per_bit = order_per_bit;
 	*res_cma = cma;

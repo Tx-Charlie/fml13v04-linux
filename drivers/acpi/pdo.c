@@ -41,11 +41,11 @@ static int acpi_ac_get_current(struct acpi_pdo *pdo)
 		return -EINVAL;
 
 	status = acpi_evaluate_object(pdo->device->handle, "GPDO", NULL,
-				       &buffer);
+				      &buffer);
 	if (ACPI_FAILURE(status)) {
 		acpi_handle_info(pdo->device->handle,
-				"Error reading PDO data: %s\n",
-				acpi_format_exception(status));
+				 "Error reading PDO data: %s\n",
+				 acpi_format_exception(status));
 		return -EINVAL;
 	}
 
@@ -56,7 +56,7 @@ static int acpi_ac_get_current(struct acpi_pdo *pdo)
 		obj = &ret_value->package.elements[0];
 		if (obj->type != ACPI_TYPE_INTEGER)
 			max_current = -EINVAL;
-		max_current = (int) obj->integer.value * 10 * 1000;
+		max_current = (int)obj->integer.value * 10 * 1000;
 	}
 	kfree(buffer.pointer);
 
@@ -75,11 +75,11 @@ static int acpi_ac_get_voltage(struct acpi_pdo *pdo)
 		return -EINVAL;
 
 	status = acpi_evaluate_object(pdo->device->handle, "GPDO", NULL,
-				       &buffer);
+				      &buffer);
 	if (ACPI_FAILURE(status)) {
 		acpi_handle_info(pdo->device->handle,
-				"Error reading PDO data: %s\n",
-				acpi_format_exception(status));
+				 "Error reading PDO data: %s\n",
+				 acpi_format_exception(status));
 		return -EINVAL;
 	}
 
@@ -99,8 +99,8 @@ static int acpi_ac_get_voltage(struct acpi_pdo *pdo)
 
 /* sysfs I/F */
 static int get_pdo_property(struct power_supply *psy,
-			   enum power_supply_property psp,
-			   union power_supply_propval *val)
+			    enum power_supply_property psp,
+			    union power_supply_propval *val)
 {
 	struct acpi_pdo *pdo = to_acpi_pdo(psy);
 
@@ -126,23 +126,22 @@ static enum power_supply_property pdo_props[] = {
 	POWER_SUPPLY_PROP_CURRENT_NOW,
 };
 
-static int acpi_pdo_add(struct acpi_device *device)
+static int acpi_pdo_probe(struct platform_device *pdev)
 {
+	struct acpi_device *device = ACPI_COMPANION(&pdev->dev);
 	struct power_supply_config psy_cfg = {};
+	struct acpi_pdo *apdo;
 	int result = 0;
-	struct acpi_pdo *apdo = NULL;
-
 
 	if (!device)
-		return -EINVAL;
+		return -ENODEV;
 
-	apdo = kzalloc(sizeof(struct acpi_pdo), GFP_KERNEL);
+	apdo = devm_kzalloc(&pdev->dev, sizeof(*apdo), GFP_KERNEL);
 	if (!apdo)
 		return -ENOMEM;
 
 	apdo->device = device;
-	strcpy(acpi_device_name(device), "PDO");
-	device->driver_data = apdo;
+	platform_set_drvdata(pdev, apdo);
 
 	psy_cfg.drv_data = apdo;
 
@@ -151,36 +150,28 @@ static int acpi_pdo_add(struct acpi_device *device)
 	apdo->pdo_desc.properties = pdo_props;
 	apdo->pdo_desc.num_properties = ARRAY_SIZE(pdo_props);
 	apdo->pdo_desc.get_property = get_pdo_property;
-	apdo->pdo = power_supply_register(&apdo->device->dev,
-					    &apdo->pdo_desc, &psy_cfg);
+	apdo->pdo = power_supply_register(&pdev->dev, &apdo->pdo_desc,
+					  &psy_cfg);
 	if (IS_ERR(apdo->pdo)) {
 		result = PTR_ERR(apdo->pdo);
-		goto err_release_pdo;
+		return result;
 	}
 
-	pr_info("%s [%s] \n", acpi_device_name(device),
+	pr_info("%s [%s] \n", acpi_dev_name(device),
 		acpi_device_bid(device));
 
 	return 0;
 
-err_release_pdo:
-	kfree(apdo);
-
-	return result;
 }
 
-static void acpi_pdo_remove(struct acpi_device *device)
+static void acpi_pdo_remove(struct platform_device *pdev)
 {
-	struct acpi_pdo *apdo = NULL;
+	struct acpi_pdo *apdo = platform_get_drvdata(pdev);
 
-	if (!device || !acpi_driver_data(device))
+	if (!apdo)
 		return;
 
-	apdo = acpi_driver_data(device);
-
 	power_supply_unregister(apdo->pdo);
-
-	kfree(apdo);
 }
 
 static const struct acpi_device_id pdo_device_ids[] = {
@@ -189,32 +180,12 @@ static const struct acpi_device_id pdo_device_ids[] = {
 };
 MODULE_DEVICE_TABLE(acpi, pdo_device_ids);
 
-static struct acpi_driver acpi_pdo_driver = {
-	.name = "pdo",
-	.ids = pdo_device_ids,
-	.ops = {
-		.add = acpi_pdo_add,
-		.remove = acpi_pdo_remove,
+static struct platform_driver acpi_pdo_driver = {
+	.probe = acpi_pdo_probe,
+	.remove = acpi_pdo_remove,
+	.driver = {
+		.name = "pdo",
+		.acpi_match_table = ACPI_PTR(pdo_device_ids),
 	},
 };
-
-static int __init acpi_pdo_init(void)
-{
-	int result;
-
-	if (acpi_disabled)
-		return -ENODEV;
-
-	result = acpi_bus_register_driver(&acpi_pdo_driver);
-	if (result < 0)
-		return -ENODEV;
-
-	return 0;
-}
-
-static void __exit acpi_pdo_exit(void)
-{
-	acpi_bus_unregister_driver(&acpi_pdo_driver);
-}
-module_init(acpi_pdo_init);
-module_exit(acpi_pdo_exit);
+module_platform_driver(acpi_pdo_driver);

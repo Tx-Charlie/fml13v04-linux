@@ -31,20 +31,20 @@
 #include "dma350_ch_drv.h"
 #include "virt-dma.h"
 
-#define DRIVER_NAME	"arm-dma350"
-#define DMA_ALIGN	4
-#define DMA_MAX_SIZE	(0xFFFFFFFF)
-#define MAX_BURST_LEN   0xF
-#define LLI_BLOCK_SIZE	(4 * PAGE_SIZE)
-#define CHANNEL_IDX(id)   (0x1000 + id * 0x100)
-#define CMD_LINK_LEN    (512)
+#define DRIVER_NAME "arm-dma350"
+#define DMA_ALIGN 4
+#define DMA_MAX_SIZE (0xFFFFFFFF)
+#define MAX_BURST_LEN 0xF
+#define LLI_BLOCK_SIZE (4 * PAGE_SIZE)
+#define CHANNEL_IDX(id) (0x1000 + id * 0x100)
+#define CMD_LINK_LEN (512)
 #define MAX_DESC_NUM 16
 #define MAX_CHAN_NUM 8
 #define RCSU_OFFSET 0x10000
 #define ARM_DMA350_PM_TIMEOUT_MS 500
 
 #define AUDSS_DMAC_INFO_AP_IRQ 0x54
-#define AUDSS_OFFSET  (0x30000000-0xc0000000)
+#define AUDSS_OFFSET (0x30000000 - 0xc0000000)
 #define DMA350_DYNAMIC_CH(ch) (ch == 0xFF)
 
 enum arm_dma350_burst_width_t {
@@ -76,7 +76,7 @@ struct arm_dma350_phy;
 
 struct arm_dma350_chan {
 	struct dma_slave_config slave_cfg;
-	u32 id;			/* Request phy chan id */
+	u32 id; /* Request phy chan id */
 	u32 req_line;
 	u32 priority;
 	u32 cyclic;
@@ -112,7 +112,7 @@ struct arm_dma350_drvdata {
 struct arm_dma350_dev {
 	struct dma_device slave;
 	void __iomem *base;
-	spinlock_t lock;	/* lock for ch and phy */
+	spinlock_t lock; /* lock for ch and phy */
 	struct list_head chan_pending;
 	struct arm_dma350_phy *phy;
 	struct arm_dma350_chan *chans;
@@ -124,8 +124,8 @@ struct arm_dma350_dev {
 	struct host_remote_map map;
 	struct regmap *regmap;
 	struct arm_dma350_drvdata *drvdata;
-	struct reset_control	*dma_reset;
-	bool	is_clk_enable_atomic;
+	struct reset_control *dma_reset;
+	bool is_clk_enable_atomic;
 };
 
 #define to_arm_dma350(dmadev) container_of(dmadev, struct arm_dma350_dev, slave)
@@ -151,7 +151,7 @@ static u32 *dma350_cmdlink_generate(struct dma350_cmdlink_gencfg_t *cmdlink_cfg,
 	u32 *cfg;
 	u32 header_sel;
 
-	cfg = (u32 *) &cmdlink_cfg->cfg;
+	cfg = (u32 *)&cmdlink_cfg->cfg;
 	*(buffer) = cmdlink_cfg->header;
 	buffer++;
 	/*
@@ -175,36 +175,36 @@ static void dma350_cmdlink_init(struct dma350_cmdlink_gencfg_t *cmdlink_cfg)
 {
 	static const struct dma350_cmdlink_gencfg_t default_cmdlink = {
 		.header = 0,
-		.cfg = {.intren = DMA350_CH_INTREN_RESET_VALUE,
-			.ctrl = DMA350_CH_CTRL_RESET_VALUE,
-			.srcaddr = 0,
-			.srcaddrhi = 0,
-			.desaddr = 0,
-			.desaddrhi = 0,
-			.xsize = 0,
-			.xsizehi = 0,
-			.srctranscfg = DMA350_CH_SRCTRANSCFG_RESET_VALUE,
-			.destranscfg = DMA350_CH_DESTRANSCFG_RESET_VALUE,
-			.xaddrinc = 0,
-			.yaddrstride = 0,
-			.fillval = 0,
-			.ysize = 0,
-			.tmpltcfg = 0,
-			.srctmplt = 0,
-			.destmplt = 0,
-			.srctrigincfg = 0,
-			.destrigincfg = 0,
-			.trigoutcfg = 0,
-			.gpoen0 = 0,
-			.reserved0 = 0,
-			.gpoval0 = 0,
-			.reserved1 = 0,
-			.streamintcfg = 0,
-			.reserved2 = 0,
-			.linkattr = 0,
-			.autocfg = DMA350_CH_AUTOCFG_RESET_VALUE,
-			.linkaddr = DMA350_CH_LINKADDR_RESET_VALUE,
-			.linkaddrhi = 0 }
+		.cfg = { .intren = DMA350_CH_INTREN_RESET_VALUE,
+			 .ctrl = DMA350_CH_CTRL_RESET_VALUE,
+			 .srcaddr = 0,
+			 .srcaddrhi = 0,
+			 .desaddr = 0,
+			 .desaddrhi = 0,
+			 .xsize = 0,
+			 .xsizehi = 0,
+			 .srctranscfg = DMA350_CH_SRCTRANSCFG_RESET_VALUE,
+			 .destranscfg = DMA350_CH_DESTRANSCFG_RESET_VALUE,
+			 .xaddrinc = 0,
+			 .yaddrstride = 0,
+			 .fillval = 0,
+			 .ysize = 0,
+			 .tmpltcfg = 0,
+			 .srctmplt = 0,
+			 .destmplt = 0,
+			 .srctrigincfg = 0,
+			 .destrigincfg = 0,
+			 .trigoutcfg = 0,
+			 .gpoen0 = 0,
+			 .reserved0 = 0,
+			 .gpoval0 = 0,
+			 .reserved1 = 0,
+			 .streamintcfg = 0,
+			 .reserved2 = 0,
+			 .linkattr = 0,
+			 .autocfg = DMA350_CH_AUTOCFG_RESET_VALUE,
+			 .linkaddr = DMA350_CH_LINKADDR_RESET_VALUE,
+			 .linkaddrhi = 0 }
 	};
 	*cmdlink_cfg = default_cmdlink;
 }
@@ -216,7 +216,9 @@ static void arm_dma350_terminate_chan(struct arm_dma350_phy *phy)
 
 static void arm_dma350_nonsec_intren(struct arm_dma350_dev *d)
 {
-	writel_relaxed(INTREN_ANYCHINTR_ENABLE, d->base + DMA350_REG_CHINTRSTATUS0 + DMA350_NONSSEC_CTRL);
+	writel_relaxed(INTREN_ANYCHINTR_ENABLE,
+		       d->base + DMA350_REG_CHINTRSTATUS0 +
+			       DMA350_NONSSEC_CTRL);
 }
 
 static void arm_dma350_clear_chan(struct arm_dma350_phy *phy)
@@ -234,7 +236,8 @@ static void arm_dma350_set_xsize(struct arm_dma350_phy *phy, u32 xsize)
 	writel_relaxed(val, phy->base + DMA350_REG_XSIZEHI);
 }
 
-static void arm_dma350_set_desc(struct arm_dma350_phy *phy, struct dma350_desc_hw *hw)
+static void arm_dma350_set_desc(struct arm_dma350_phy *phy,
+				struct dma350_desc_hw *hw)
 {
 	writel_relaxed(hw->saddr, phy->base + DMA350_REG_SRCADDR);
 	writel_relaxed(hw->daddr, phy->base + DMA350_REG_DESADDR);
@@ -246,8 +249,8 @@ static void arm_dma350_init_state(struct arm_dma350_phy *phy)
 {
 	dma350_ch_enable_intr(phy->base + DMA350_REG_INTREN,
 			      DMA350_CH_INTREN_DONE | DMA350_CH_INTREN_ERR |
-			      DMA350_CH_INTREN_DISABLED |
-			      DMA350_CH_INTREN_STOPPED);
+				      DMA350_CH_INTREN_DISABLED |
+				      DMA350_CH_INTREN_STOPPED);
 }
 
 static int arm_dma350_start_txd(struct arm_dma350_chan *c)
@@ -259,7 +262,8 @@ static int arm_dma350_start_txd(struct arm_dma350_chan *c)
 	if (!c->phy)
 		return -EAGAIN;
 	if (vd) {
-		struct arm_dma350_desc_sw *ds = container_of(vd, struct arm_dma350_desc_sw, vd);
+		struct arm_dma350_desc_sw *ds =
+			container_of(vd, struct arm_dma350_desc_sw, vd);
 		/*
 		 * fetch and remove request from vc->desc_issued
 		 * so vc->desc_issued only contains desc pending
@@ -272,33 +276,44 @@ static int arm_dma350_start_txd(struct arm_dma350_chan *c)
 
 		/* start dma */
 		if (c->cyclic) {
-			dma350_ch_set_xsize32(c->phy->base + DMA350_REG_XSIZE, 0, 0);
+			dma350_ch_set_xsize32(c->phy->base + DMA350_REG_XSIZE,
+					      0, 0);
 			writel_relaxed(0, c->phy->base + DMA350_REG_INTREN);
-			dma350_ch_cmd(c->phy->base + DMA350_REG_CMD, DMA350_CH_CMD_ENABLECMD);
-			dma350_ch_set_linkaddr32(c->phy->base + DMA350_REG_LINKADDR,
-						(u32)(phy_cmd0[c->id] + AUDSS_OFFSET));
-			dma350_ch_enable_linkaddr(c->phy->base + DMA350_REG_LINKADDR);
-			dma350_ch_cmd(c->phy->base + DMA350_REG_CMD, DMA350_CH_CMD_ENABLECMD);
+			dma350_ch_cmd(c->phy->base + DMA350_REG_CMD,
+				      DMA350_CH_CMD_ENABLECMD);
+			dma350_ch_set_linkaddr32(
+				c->phy->base + DMA350_REG_LINKADDR,
+				(u32)(phy_cmd0[c->id] + AUDSS_OFFSET));
+			dma350_ch_enable_linkaddr(c->phy->base +
+						  DMA350_REG_LINKADDR);
+			dma350_ch_cmd(c->phy->base + DMA350_REG_CMD,
+				      DMA350_CH_CMD_ENABLECMD);
 			if (cfg->direction == DMA_MEM_TO_DEV) {
 				timeout = 0;
-				while ((!(readl_relaxed(c->phy->base + DMA350_REG_STATUS) &
+				while ((!(
+					readl_relaxed(c->phy->base +
+						      DMA350_REG_STATUS) &
 					DMA350_CH_STATUS_STAT_DESTRIGINWAIT_Msk))) {
 					udelay(10);
 					timeout++;
 					if (timeout > 10) {
-						pr_info("channel %d timeout\n", c->id);
+						pr_info("channel %d timeout\n",
+							c->id);
 						break;
 					}
 				}
 			}
 			if (cfg->direction == DMA_DEV_TO_MEM) {
 				timeout = 0;
-				while ((!(readl_relaxed(c->phy->base + DMA350_REG_STATUS) &
+				while ((!(
+					readl_relaxed(c->phy->base +
+						      DMA350_REG_STATUS) &
 					DMA350_CH_STATUS_STAT_SRCTRIGINWAIT_Msk))) {
 					udelay(10);
 					timeout++;
 					if (timeout > 10) {
-						pr_info("channel %d timeout\n", c->id);
+						pr_info("channel %d timeout\n",
+							c->id);
 						break;
 					}
 				}
@@ -324,8 +339,8 @@ static void arm_dma350_task(struct arm_dma350_dev *d)
 	/* check new channel request in d->chan_pending */
 	spin_lock_irqsave(&d->lock, flags);
 	while (!list_empty(&d->chan_pending)) {
-		c = list_first_entry(&d->chan_pending,
-				     struct arm_dma350_chan, node);
+		c = list_first_entry(&d->chan_pending, struct arm_dma350_chan,
+				     node);
 		p = &d->phy[c->id];
 		/* remove from d->chan_pending */
 		list_del_init(&c->node);
@@ -336,7 +351,6 @@ static void arm_dma350_task(struct arm_dma350_dev *d)
 	}
 	spin_unlock_irqrestore(&d->lock, flags);
 	for (pch = 0; pch < d->max_channels; pch++) {
-
 		if (pch_alloc & (1 << pch)) {
 			p = &d->phy[pch];
 			c = p->vchan;
@@ -358,8 +372,10 @@ static u32 arm_dma_ch_clrstatus(struct arm_dma350_dev *d, u32 ch_id)
 {
 	u32 val = arm_dma_ch_getstatus(d, ch_id);
 
-	val &= DMA350_CH_INTREN_DONE | DMA350_CH_INTREN_ERR | DMA350_CH_INTREN_DISABLED | DMA350_CH_INTREN_STOPPED;
-	writel_relaxed(val << 16, d->base + DMA350_REG_STATUS + CHANNEL_IDX(ch_id));
+	val &= DMA350_CH_INTREN_DONE | DMA350_CH_INTREN_ERR |
+	       DMA350_CH_INTREN_DISABLED | DMA350_CH_INTREN_STOPPED;
+	writel_relaxed(val << 16,
+		       d->base + DMA350_REG_STATUS + CHANNEL_IDX(ch_id));
 	return 0;
 }
 
@@ -377,7 +393,9 @@ static irqreturn_t arm_dma350_int_handler(int irq, void *dev_id)
 			continue;
 		}
 		if (chstatus & DMA350_CH_STATUS_INTR_ERR) {
-			writel_relaxed(DMA350_CH_STATUS_STAT_ERR, d->base + DMA350_REG_STATUS + CHANNEL_IDX(ch_idx));
+			writel_relaxed(DMA350_CH_STATUS_STAT_ERR,
+				       d->base + DMA350_REG_STATUS +
+					       CHANNEL_IDX(ch_idx));
 			pr_err("transfer error!!!\n");
 		}
 		if ((chstatus & DMA350_CH_STATUS_INTR_DONE) == 0) {
@@ -434,12 +452,14 @@ static u32 get_bytes_in_phy_channel(struct arm_dma350_phy *phy)
 	u32 byteslo, byteshi;
 
 	byteslo = readl_relaxed(phy->base + DMA350_REG_XSIZE) & 0xFFFF;
-	byteshi = (readl_relaxed(phy->base + DMA350_REG_XSIZE) & 0xFFFF0000) >> 16;
+	byteshi = (readl_relaxed(phy->base + DMA350_REG_XSIZE) & 0xFFFF0000) >>
+		  16;
 	if (byteslo > byteshi)
 		bytes = byteshi;
 	else
 		bytes = byteslo;
-	witdth = readl_relaxed(phy->base + DMA350_REG_CTRL) & DMA350_CH_CTRL_TRANSIZE_Msk;
+	witdth = readl_relaxed(phy->base + DMA350_REG_CTRL) &
+		 DMA350_CH_CTRL_TRANSIZE_Msk;
 	switch (witdth) {
 	case DMA350_DMA_WIDTH_8BIT:
 		break;
@@ -481,8 +501,10 @@ static enum dma_status arm_dma350_tx_status(struct dma_chan *chan,
 	if (c->cyclic) {
 		vd = vchan_find_desc(&c->vc, cookie);
 		if (vd) {
-			bytes = container_of(vd, struct arm_dma350_desc_sw, vd)->size;
-			residue = bytes - bytes / dmachan[c->id] * desnum[c->id];
+			bytes = container_of(vd, struct arm_dma350_desc_sw, vd)
+					->size;
+			residue =
+				bytes - bytes / dmachan[c->id] * desnum[c->id];
 		}
 	} else {
 		residue = get_bytes_in_phy_channel(p);
@@ -525,15 +547,16 @@ static void arm_dma350_fill_desc(struct arm_dma350_desc_sw *ds, dma_addr_t dst,
 	ds->desc_hw[num].x_len = len;
 }
 
-static struct arm_dma350_desc_sw *arm_dma350_alloc_desc_resource(int num,
-						     struct dma_chan *chan)
+static struct arm_dma350_desc_sw *
+arm_dma350_alloc_desc_resource(int num, struct dma_chan *chan)
 {
 	struct arm_dma350_desc_sw *ds;
 	struct arm_dma350_dev *d = to_arm_dma350(chan->device);
 	int lli_limit = LLI_BLOCK_SIZE / sizeof(struct dma350_desc_hw);
 
 	if (num > lli_limit) {
-		dev_err(chan->device->dev, "sg num %d exceed max %d\n", num, lli_limit);
+		dev_err(chan->device->dev, "sg num %d exceed max %d\n", num,
+			lli_limit);
 		return NULL;
 	}
 	ds = kzalloc(sizeof(*ds), GFP_ATOMIC);
@@ -550,9 +573,9 @@ static struct arm_dma350_desc_sw *arm_dma350_alloc_desc_resource(int num,
 	return ds;
 }
 
-static int arm_dma350_pre_config_sg(struct arm_dma350_chan *c, enum dma_transfer_direction dir)
+static int arm_dma350_pre_config_sg(struct arm_dma350_chan *c,
+				    enum dma_transfer_direction dir)
 {
-
 	struct arm_dma350_dev *dev = to_arm_dma350(c->vc.chan.device);
 	struct arm_dma350_phy *p = &dev->phy[c->id];
 	struct dma_slave_config *cfg = &c->slave_cfg;
@@ -563,18 +586,22 @@ static int arm_dma350_pre_config_sg(struct arm_dma350_chan *c, enum dma_transfer
 		if (!ret) {
 			c->is_used_runtime = true;
 		} else {
-			dev_err(dev->slave.dev, "%s, pm get err, %d, c->id = %d\n",
-				__func__, ret, c->id);
+			dev_err(dev->slave.dev,
+				"%s, pm get err, %d, c->id = %d\n", __func__,
+				ret, c->id);
 			return ret;
 		}
 	}
 
 	arm_dma350_nonsec_intren(dev);
-	dma350_ch_set_xtype(p->base + DMA350_REG_CTRL, DMA350_CH_XTYPE_CONTINUE);
+	dma350_ch_set_xtype(p->base + DMA350_REG_CTRL,
+			    DMA350_CH_XTYPE_CONTINUE);
 
 	switch (dir) {
 	case DMA_MEM_TO_DEV:
-		dma350_ch_enable_intr(p->base + DMA350_REG_INTREN, DMA350_CH_INTREN_DONE | DMA350_CH_INTREN_ERR);
+		dma350_ch_enable_intr(p->base + DMA350_REG_INTREN,
+				      DMA350_CH_INTREN_DONE |
+					      DMA350_CH_INTREN_ERR);
 		c->dev_addr = cfg->dst_addr - RCSU_OFFSET;
 		c->transize = cfg->dst_addr_width;
 		/* dst len is calculated from src width, len and dst width.
@@ -584,36 +611,48 @@ static int arm_dma350_pre_config_sg(struct arm_dma350_chan *c, enum dma_transfer
 		 */
 		maxburst = cfg->dst_maxburst - 1;
 		maxburst = maxburst < MAX_BURST_LEN ? maxburst : MAX_BURST_LEN;
-		dma350_ch_set_desmaxburstlen(p->base + DMA350_REG_DESTRANSCFG, maxburst);
-		dma350_ch_set_transize(p->base + DMA350_REG_CTRL, ffs(cfg->dst_addr_width) - 1);
+		dma350_ch_set_desmaxburstlen(p->base + DMA350_REG_DESTRANSCFG,
+					     maxburst);
+		dma350_ch_set_transize(p->base + DMA350_REG_CTRL,
+				       ffs(cfg->dst_addr_width) - 1);
 		dma350_ch_enable_destrigin(p->base + DMA350_REG_CTRL);
 		dma350_ch_src_memattr(p->base + DMA350_REG_SRCTRANSCFG, 4, 4);
 		dma350_ch_des_memattr(p->base + DMA350_REG_DESTRANSCFG, 0, 0);
-		dma350_ch_set_destrigintype(p->base + DMA350_REG_DESTRIGINCFG, DMA350_CH_DESTRIGINTYPE_HW);
-		dma350_ch_set_destriginmode(p->base + DMA350_REG_DESTRIGINCFG,
-						DMA350_CH_DESTRIGINMODE_PERIPH_FLOW_CTRL);
-		dma350_ch_set_destriginsel(p->base + DMA350_REG_DESTRIGINCFG, c->req_line);
+		dma350_ch_set_destrigintype(p->base + DMA350_REG_DESTRIGINCFG,
+					    DMA350_CH_DESTRIGINTYPE_HW);
+		dma350_ch_set_destriginmode(
+			p->base + DMA350_REG_DESTRIGINCFG,
+			DMA350_CH_DESTRIGINMODE_PERIPH_FLOW_CTRL);
+		dma350_ch_set_destriginsel(p->base + DMA350_REG_DESTRIGINCFG,
+					   c->req_line);
 		dma350_ch_set_xaddr_inc(p->base + DMA350_REG_XADDRINC, 1, 0);
 
 		break;
 	case DMA_DEV_TO_MEM:
-		dma350_ch_enable_intr(p->base + DMA350_REG_INTREN, DMA350_CH_INTREN_DONE | DMA350_CH_INTREN_ERR);
+		dma350_ch_enable_intr(p->base + DMA350_REG_INTREN,
+				      DMA350_CH_INTREN_DONE |
+					      DMA350_CH_INTREN_ERR);
 		c->dev_addr = cfg->src_addr - RCSU_OFFSET;
 		c->transize = cfg->src_addr_width;
 		maxburst = cfg->src_maxburst - 1;
 		maxburst = maxburst < MAX_BURST_LEN ? maxburst : MAX_BURST_LEN;
-		dma350_ch_set_srcmaxburstlen(p->base + DMA350_REG_DESTRANSCFG, maxburst);
-		dma350_ch_set_transize(p->base + DMA350_REG_CTRL, ffs(cfg->src_addr_width) - 1);
+		dma350_ch_set_srcmaxburstlen(p->base + DMA350_REG_DESTRANSCFG,
+					     maxburst);
+		dma350_ch_set_transize(p->base + DMA350_REG_CTRL,
+				       ffs(cfg->src_addr_width) - 1);
 		dma350_ch_enable_srctrigin(p->base + DMA350_REG_CTRL);
 
 		dma350_ch_src_memattr(p->base + DMA350_REG_SRCTRANSCFG, 0, 0);
 
 		/*set des attribute to device memory,to fix the SOCHW-1449 bug */
 		dma350_ch_des_memattr(p->base + DMA350_REG_DESTRANSCFG, 0, 0);
-		dma350_ch_set_srctrigintype(p->base + DMA350_REG_SRCTRIGINCFG, DMA350_CH_SRCTRIGINTYPE_HW);
-		dma350_ch_set_srctriginmode(p->base + DMA350_REG_SRCTRIGINCFG,
-						DMA350_CH_SRCTRIGINMODE_PERIPH_FLOW_CTRL);
-		dma350_ch_set_srctriginsel(p->base + DMA350_REG_SRCTRIGINCFG, c->req_line);
+		dma350_ch_set_srctrigintype(p->base + DMA350_REG_SRCTRIGINCFG,
+					    DMA350_CH_SRCTRIGINTYPE_HW);
+		dma350_ch_set_srctriginmode(
+			p->base + DMA350_REG_SRCTRIGINCFG,
+			DMA350_CH_SRCTRIGINMODE_PERIPH_FLOW_CTRL);
+		dma350_ch_set_srctriginsel(p->base + DMA350_REG_SRCTRIGINCFG,
+					   c->req_line);
 		dma350_ch_set_xaddr_inc(p->base + DMA350_REG_XADDRINC, 0, 1);
 		break;
 	default:
@@ -623,9 +662,9 @@ static int arm_dma350_pre_config_sg(struct arm_dma350_chan *c, enum dma_transfer
 	return 0;
 }
 
-static int arm_dma350_pre_config_cyclic(struct arm_dma350_chan *c, enum dma_transfer_direction dir)
+static int arm_dma350_pre_config_cyclic(struct arm_dma350_chan *c,
+					enum dma_transfer_direction dir)
 {
-
 	struct arm_dma350_dev *dev = to_arm_dma350(c->vc.chan.device);
 	struct arm_dma350_phy *p = &dev->phy[c->id];
 	struct dma_slave_config *cfg = &c->slave_cfg;
@@ -636,14 +675,16 @@ static int arm_dma350_pre_config_cyclic(struct arm_dma350_chan *c, enum dma_tran
 				   1 << c->id, 1 << c->id);
 
 	arm_dma350_clear_chan(p);
-	dma350_ch_set_xtype(p->base + DMA350_REG_CTRL, DMA350_CH_XTYPE_CONTINUE);
+	dma350_ch_set_xtype(p->base + DMA350_REG_CTRL,
+			    DMA350_CH_XTYPE_CONTINUE);
 	dma350_ch_set_chprio(p->base + DMA350_REG_CTRL, c->priority);
 
 	/* Setup first */
 	dma350_cmdlink_init(&cmdlink_cfg[c->id][0]);
 	/* Clear DMA registers upon loading this command */
 	dma350_cmdlink_set_regclear(&cmdlink_cfg[c->id][0]);
-	dma350_cmdlink_set_xtype(&cmdlink_cfg[c->id][0], DMA350_CH_XTYPE_CONTINUE);
+	dma350_cmdlink_set_xtype(&cmdlink_cfg[c->id][0],
+				 DMA350_CH_XTYPE_CONTINUE);
 	switch (dir) {
 	case DMA_MEM_TO_DEV:
 		c->dev_addr = cfg->dst_addr;
@@ -656,46 +697,68 @@ static int arm_dma350_pre_config_cyclic(struct arm_dma350_chan *c, enum dma_tran
 		 */
 		maxburst = cfg->dst_maxburst - 1;
 		maxburst = maxburst < MAX_BURST_LEN ? maxburst : MAX_BURST_LEN;
-		dma350_ch_set_transize(p->base + DMA350_REG_CTRL, ffs(cfg->dst_addr_width) - 1);
+		dma350_ch_set_transize(p->base + DMA350_REG_CTRL,
+				       ffs(cfg->dst_addr_width) - 1);
 
 		/*generate cmd link list*/
-		dma350_cmdlink_set_desaddr32(&cmdlink_cfg[c->id][0], c->dev_addr);
-		dma350_cmdlink_set_transize(&cmdlink_cfg[c->id][0], ffs(cfg->dst_addr_width) - 1);
+		dma350_cmdlink_set_desaddr32(&cmdlink_cfg[c->id][0],
+					     c->dev_addr);
+		dma350_cmdlink_set_transize(&cmdlink_cfg[c->id][0],
+					    ffs(cfg->dst_addr_width) - 1);
 		dma350_cmdlink_set_srcmemattrhi(&cmdlink_cfg[c->id][0], 4);
 		dma350_cmdlink_set_srcmemattrlo(&cmdlink_cfg[c->id][0], 4);
 		dma350_cmdlink_set_desmemattrhi(&cmdlink_cfg[c->id][0], 0);
 		dma350_cmdlink_set_desmemattrlo(&cmdlink_cfg[c->id][0], 0);
-		dma350_cmdlink_set_desmaxburstlen(&cmdlink_cfg[c->id][0], maxburst);
-		dma350_cmdlink_enable_intr(&cmdlink_cfg[c->id][0], DMA350_CH_INTREN_DONE |
-		DMA350_CH_INTREN_ERR | DMA350_CH_INTREN_DISABLED | DMA350_CH_INTREN_STOPPED);
+		dma350_cmdlink_set_desmaxburstlen(&cmdlink_cfg[c->id][0],
+						  maxburst);
+		dma350_cmdlink_enable_intr(&cmdlink_cfg[c->id][0],
+					   DMA350_CH_INTREN_DONE |
+						   DMA350_CH_INTREN_ERR |
+						   DMA350_CH_INTREN_DISABLED |
+						   DMA350_CH_INTREN_STOPPED);
 		dma350_cmdlink_enable_destrigin(&cmdlink_cfg[c->id][0]);
-		dma350_cmdlink_set_destriginmode(&cmdlink_cfg[c->id][0], DMA350_CH_DESTRIGINMODE_PERIPH_FLOW_CTRL);
-		dma350_cmdlink_set_destrigintype(&cmdlink_cfg[c->id][0], DMA350_CH_DESTRIGINTYPE_HW);
+		dma350_cmdlink_set_destriginmode(
+			&cmdlink_cfg[c->id][0],
+			DMA350_CH_DESTRIGINMODE_PERIPH_FLOW_CTRL);
+		dma350_cmdlink_set_destrigintype(&cmdlink_cfg[c->id][0],
+						 DMA350_CH_DESTRIGINTYPE_HW);
 		dma350_cmdlink_set_xaddrinc(&cmdlink_cfg[c->id][0], 1, 0);
-		dma350_cmdlink_set_destriginsel(&cmdlink_cfg[c->id][0], c->req_line);
+		dma350_cmdlink_set_destriginsel(&cmdlink_cfg[c->id][0],
+						c->req_line);
 		break;
 	case DMA_DEV_TO_MEM:
 		c->dev_addr = cfg->src_addr;
 		c->transize = cfg->src_addr_width;
 		maxburst = cfg->src_maxburst - 1;
 		maxburst = maxburst < MAX_BURST_LEN ? maxburst : MAX_BURST_LEN;
-		dma350_ch_set_transize(p->base + DMA350_REG_CTRL, ffs(cfg->src_addr_width) - 1);
+		dma350_ch_set_transize(p->base + DMA350_REG_CTRL,
+				       ffs(cfg->src_addr_width) - 1);
 
-		 /*generate cmd link list*/
-		dma350_cmdlink_set_srcaddr32(&cmdlink_cfg[c->id][0], c->dev_addr);
-		dma350_cmdlink_set_transize(&cmdlink_cfg[c->id][0], ffs(cfg->src_addr_width) - 1);
+		/*generate cmd link list*/
+		dma350_cmdlink_set_srcaddr32(&cmdlink_cfg[c->id][0],
+					     c->dev_addr);
+		dma350_cmdlink_set_transize(&cmdlink_cfg[c->id][0],
+					    ffs(cfg->src_addr_width) - 1);
 		dma350_cmdlink_set_desmemattrhi(&cmdlink_cfg[c->id][0], 4);
 		dma350_cmdlink_set_desmemattrlo(&cmdlink_cfg[c->id][0], 4);
 		dma350_cmdlink_set_srcmemattrhi(&cmdlink_cfg[c->id][0], 0);
 		dma350_cmdlink_set_srcmemattrlo(&cmdlink_cfg[c->id][0], 0);
-		dma350_cmdlink_set_srcmaxburstlen(&cmdlink_cfg[c->id][0], maxburst);
+		dma350_cmdlink_set_srcmaxburstlen(&cmdlink_cfg[c->id][0],
+						  maxburst);
 		dma350_cmdlink_enable_intr(&cmdlink_cfg[c->id][0],
-		DMA350_CH_INTREN_DONE|DMA350_CH_INTREN_ERR | DMA350_CH_INTREN_DISABLED | DMA350_CH_INTREN_STOPPED);
+					   DMA350_CH_INTREN_DONE |
+						   DMA350_CH_INTREN_ERR |
+						   DMA350_CH_INTREN_DISABLED |
+						   DMA350_CH_INTREN_STOPPED);
 		dma350_cmdlink_enable_srctrigin(&cmdlink_cfg[c->id][0]);
-		dma350_cmdlink_set_srctriginmode(&cmdlink_cfg[c->id][0], DMA350_CH_SRCTRIGINMODE_PERIPH_FLOW_CTRL);
-		dma350_cmdlink_set_srctrigintype(&cmdlink_cfg[c->id][0], DMA350_CH_SRCTRIGINTYPE_HW);
+		dma350_cmdlink_set_srctriginmode(
+			&cmdlink_cfg[c->id][0],
+			DMA350_CH_SRCTRIGINMODE_PERIPH_FLOW_CTRL);
+		dma350_cmdlink_set_srctrigintype(&cmdlink_cfg[c->id][0],
+						 DMA350_CH_SRCTRIGINTYPE_HW);
 		dma350_cmdlink_set_xaddrinc(&cmdlink_cfg[c->id][0], 0, 1);
-		dma350_cmdlink_set_srctriginsel(&cmdlink_cfg[c->id][0], c->req_line);
+		dma350_cmdlink_set_srctriginsel(&cmdlink_cfg[c->id][0],
+						c->req_line);
 		break;
 	default:
 		return -EINVAL;
@@ -704,8 +767,9 @@ static int arm_dma350_pre_config_cyclic(struct arm_dma350_chan *c, enum dma_tran
 	return 0;
 }
 
-static struct dma_async_tx_descriptor *arm_dma350_prep_memcpy(struct dma_chan *chan,
-		dma_addr_t dst, dma_addr_t src, size_t len, unsigned long flags)
+static struct dma_async_tx_descriptor *
+arm_dma350_prep_memcpy(struct dma_chan *chan, dma_addr_t dst, dma_addr_t src,
+		       size_t len, unsigned long flags)
 {
 	struct arm_dma350_chan *c = to_dma350_chan(chan);
 	struct arm_dma350_desc_sw *ds;
@@ -729,8 +793,9 @@ static struct dma_async_tx_descriptor *arm_dma350_prep_memcpy(struct dma_chan *c
 		if (!ret) {
 			c->is_used_runtime = true;
 		} else {
-			dev_err(dev->slave.dev, "%s, pm get err, %d, c->id = %d\n",
-				__func__, ret, c->id);
+			dev_err(dev->slave.dev,
+				"%s, pm get err, %d, c->id = %d\n", __func__,
+				ret, c->id);
 			return NULL;
 		}
 	}
@@ -738,7 +803,8 @@ static struct dma_async_tx_descriptor *arm_dma350_prep_memcpy(struct dma_chan *c
 	arm_dma350_nonsec_intren(dev);
 	arm_dma350_init_state(p);
 	c->dev_addr = cfg->src_addr;
-	dma350_ch_set_transize(p->base + DMA350_REG_CTRL, ffs(cfg->src_addr_width) - 1);
+	dma350_ch_set_transize(p->base + DMA350_REG_CTRL,
+			       ffs(cfg->src_addr_width) - 1);
 	dma350_ch_src_memattr(p->base + DMA350_REG_SRCTRANSCFG, 4, 4);
 	dma350_ch_des_memattr(p->base + DMA350_REG_DESTRANSCFG, 4, 4);
 	dma350_ch_set_xaddr_inc(p->base + DMA350_REG_XADDRINC, 1, 1);
@@ -750,7 +816,8 @@ static struct dma_async_tx_descriptor *arm_dma350_prep_memcpy(struct dma_chan *c
 	num = 0;
 	do {
 		copy = min_t(size_t, len, DMA_MAX_SIZE);
-		arm_dma350_fill_desc(ds, dst, src, copy / cfg->src_addr_width, num++);
+		arm_dma350_fill_desc(ds, dst, src, copy / cfg->src_addr_width,
+				     num++);
 
 		src += copy;
 		dst += copy;
@@ -761,9 +828,10 @@ static struct dma_async_tx_descriptor *arm_dma350_prep_memcpy(struct dma_chan *c
 	return vchan_tx_prep(&c->vc, &ds->vd, flags);
 }
 
-static struct dma_async_tx_descriptor *arm_dma350_prep_slave_sg(
-	struct dma_chan *chan, struct scatterlist *sgl, unsigned int sglen,
-	enum dma_transfer_direction dir, unsigned long flags, void *context)
+static struct dma_async_tx_descriptor *
+arm_dma350_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
+			 unsigned int sglen, enum dma_transfer_direction dir,
+			 unsigned long flags, void *context)
 {
 	struct arm_dma350_chan *c = to_dma350_chan(chan);
 	struct arm_dma350_desc_sw *ds;
@@ -793,7 +861,6 @@ static struct dma_async_tx_descriptor *arm_dma350_prep_slave_sg(
 		avail = sg_dma_len(sg);
 		total += avail;
 		do {
-
 			len = min_t(size_t, avail, DMA_MAX_SIZE);
 
 			if (dir == DMA_MEM_TO_DEV) {
@@ -803,7 +870,8 @@ static struct dma_async_tx_descriptor *arm_dma350_prep_slave_sg(
 				src = c->dev_addr;
 				dst = addr;
 			}
-			arm_dma350_fill_desc(ds, dst, src, (len / c->transize), num++);
+			arm_dma350_fill_desc(ds, dst, src, (len / c->transize),
+					     num++);
 			addr += len;
 			avail -= len;
 		} while (avail);
@@ -823,7 +891,8 @@ static int arm_dma350_find_idle_channel(struct dma_chan *chan)
 			continue;
 
 		if (atomic_cmpxchg(&vaild_chan_id[ch_idx], 0, 1) == 0) {
-			dev_info(d->slave.dev, "use dynamic channel-%d \n", ch_idx);
+			dev_info(d->slave.dev, "use dynamic channel-%d \n",
+				 ch_idx);
 			c->id = ch_idx;
 			break;
 		}
@@ -864,8 +933,10 @@ static void arm_dma350_cmdlink_cfg_destory(u32 chan_id)
 	cmdlink_cfg[chan_id] = NULL;
 }
 
-static struct dma_async_tx_descriptor *arm_dma350_prep_dma_cyclic(struct dma_chan *chan, dma_addr_t dma_addr,
-		size_t buf_len, size_t period_len, enum dma_transfer_direction dir, unsigned long flags)
+static struct dma_async_tx_descriptor *
+arm_dma350_prep_dma_cyclic(struct dma_chan *chan, dma_addr_t dma_addr,
+			   size_t buf_len, size_t period_len,
+			   enum dma_transfer_direction dir, unsigned long flags)
 {
 	struct arm_dma350_chan *c = to_dma350_chan(chan);
 	struct arm_dma350_dev *d = to_arm_dma350(chan->device);
@@ -886,14 +957,16 @@ static struct dma_async_tx_descriptor *arm_dma350_prep_dma_cyclic(struct dma_cha
 		if (!ret) {
 			c->is_used_runtime = true;
 		} else {
-			dev_err(d->slave.dev, "%s, pm get err, %d, c->id = %d\n",
-				__func__, ret, c->id);
+			dev_err(d->slave.dev,
+				"%s, pm get err, %d, c->id = %d\n", __func__,
+				ret, c->id);
 			return NULL;
 		}
 	}
 
 	/*if channel id is 0xFF,it means we should use dynamic channel*/
-	if ((DMA350_DYNAMIC_CH(c->id)) && (arm_dma350_find_idle_channel(chan))) {
+	if ((DMA350_DYNAMIC_CH(c->id)) &&
+	    (arm_dma350_find_idle_channel(chan))) {
 		pm_runtime_put_noidle(d->slave.dev);
 		return NULL;
 	}
@@ -945,7 +1018,6 @@ static struct dma_async_tx_descriptor *arm_dma350_prep_dma_cyclic(struct dma_cha
 				offset = dst - d->map.ram_host_addr;
 				dst = d->map.ram_remote_addr + offset;
 			}
-
 		}
 		dma_addr += period_len;
 		buf += period_len;
@@ -958,21 +1030,27 @@ static struct dma_async_tx_descriptor *arm_dma350_prep_dma_cyclic(struct dma_cha
 					   (period_len / c->transize));
 		cmd_num++;
 	}
-	cmd0[c->id] = dma_alloc_coherent(chan->device->dev, CMD_LINK_LEN * sizeof(u32), &phy_cmd0[c->id], GFP_ATOMIC);
+	cmd0[c->id] = dma_alloc_coherent(chan->device->dev,
+					 CMD_LINK_LEN * sizeof(u32),
+					 &phy_cmd0[c->id], GFP_ATOMIC);
 	cmd_num = 0;
 	while (cmd_num < num_periods) {
 		/* cmd linklist prepare*/
-		dma350_cmdlink_generate(&cmdlink_cfg[c->id][cmd_num], cmd0[c->id] + cmd_num+bit, &bit);
+		dma350_cmdlink_generate(&cmdlink_cfg[c->id][cmd_num],
+					cmd0[c->id] + cmd_num + bit, &bit);
 		/*
 		 *if not the last command,then fill the next command address to the linkaddr domain
 		 *if the last command, then fill the next command address with the first linkaddr
 		 */
 		if (cmd_num == (num_periods - 1))
-			*(cmd0[c->id] + bit + cmd_num) = (u32)(phy_cmd0[c->id] + AUDSS_OFFSET) +
-								DMA350_CH_LINKADDR_LINKADDREN;
+			*(cmd0[c->id] + bit + cmd_num) =
+				(u32)(phy_cmd0[c->id] + AUDSS_OFFSET) +
+				DMA350_CH_LINKADDR_LINKADDREN;
 		else
-			*(cmd0[c->id] + bit + cmd_num) = (u32)(phy_cmd0[c->id] + (bit + cmd_num + 1) * 4 +
-								AUDSS_OFFSET) + DMA350_CH_LINKADDR_LINKADDREN;
+			*(cmd0[c->id] + bit + cmd_num) =
+				(u32)(phy_cmd0[c->id] +
+				      (bit + cmd_num + 1) * 4 + AUDSS_OFFSET) +
+				DMA350_CH_LINKADDR_LINKADDREN;
 		cmd_num++;
 	}
 	dmachan[c->id] = num_periods;
@@ -1029,7 +1107,8 @@ static int arm_dma350_terminate_all(struct dma_chan *chan)
 		arm_dma350_terminate_chan(p);
 		dma350_ch_disable_linkaddr(p->base + DMA350_REG_LINKADDR);
 		arm_dma350_clear_chan(p);
-		if ((cfg->direction == DMA_DEV_TO_MEM) && !c->cyclic && p->ds_run)
+		if ((cfg->direction == DMA_DEV_TO_MEM) && !c->cyclic &&
+		    p->ds_run)
 			vchan_vdesc_fini(&p->ds_run->vd);
 		c->phy = NULL;
 		if (c->cyclic)
@@ -1044,7 +1123,8 @@ static int arm_dma350_terminate_all(struct dma_chan *chan)
 	spin_unlock_irqrestore(&c->vc.lock, flags);
 
 	if (c->cyclic) {
-		dma_free_coherent(chan->device->dev, CMD_LINK_LEN * sizeof(u32), cmd0[c->id], phy_cmd0[c->id]);
+		dma_free_coherent(chan->device->dev, CMD_LINK_LEN * sizeof(u32),
+				  cmd0[c->id], phy_cmd0[c->id]);
 		arm_dma350_cmdlink_cfg_destory(c->id);
 	}
 
@@ -1058,8 +1138,10 @@ static int arm_dma350_terminate_all(struct dma_chan *chan)
 		pm_runtime_mark_last_busy(d->slave.dev);
 		ret = pm_runtime_put_autosuspend(d->slave.dev);
 		if (ret)
-			dev_warn(d->slave.dev, "%s pm_runtime_put_autosuspend failed, ret =%d,c->id =%d.\n",
-					__func__, ret, c->id);
+			dev_warn(
+				d->slave.dev,
+				"%s pm_runtime_put_autosuspend failed, ret =%d,c->id =%d.\n",
+				__func__, ret, c->id);
 
 		c->is_used_runtime = false;
 	}
@@ -1103,7 +1185,7 @@ static int arm_dma350_transfer_resume(struct dma_chan *chan)
 static void arm_dma350_free_desc(struct virt_dma_desc *vd)
 {
 	struct arm_dma350_desc_sw *ds =
-	    container_of(vd, struct arm_dma350_desc_sw, vd);
+		container_of(vd, struct arm_dma350_desc_sw, vd);
 	struct arm_dma350_dev *d = to_arm_dma350(vd->tx.chan->device);
 
 	if (ds != NULL) {
@@ -1121,17 +1203,17 @@ static const struct arm_dma350_drvdata arm_dma350_full = {
 };
 
 static const struct of_device_id arm_dma350_dt_ids[] = {
-	{.compatible = "arm,dma350-no-pause", .data = &arm_dma350_no_pause },
-	{.compatible = "arm,dma350-full", .data = &arm_dma350_full },
-	{ }
+	{ .compatible = "arm,dma350-no-pause", .data = &arm_dma350_no_pause },
+	{ .compatible = "arm,dma350-full", .data = &arm_dma350_full },
+	{}
 };
 
 MODULE_DEVICE_TABLE(of, arm_dma350_dt_ids);
 
 static const struct acpi_device_id arm_dma350_acpi_ids[] = {
-	{ "CIXH1006", .driver_data = (kernel_ulong_t) &arm_dma350_no_pause },
-	{ "CIXHA014", .driver_data = (kernel_ulong_t) &arm_dma350_full },
-	{ },
+	{ "CIXH1006", .driver_data = (kernel_ulong_t)&arm_dma350_no_pause },
+	{ "CIXHA014", .driver_data = (kernel_ulong_t)&arm_dma350_full },
+	{},
 };
 
 MODULE_DEVICE_TABLE(acpi, arm_dma350_acpi_ids);
@@ -1156,16 +1238,20 @@ static struct dma_chan *arm_dma350_of_xlate(struct of_phandle_args *dma_spec,
 		channel_id = dma_spec->args[1];
 		channel_pri = dma_spec->args[2];
 	} else {
-		dev_err(d->slave.dev, "para  invalid %s %d\n", __func__, __LINE__);
+		dev_err(d->slave.dev, "para  invalid %s %d\n", __func__,
+			__LINE__);
 	}
 
-	if ((!DMA350_DYNAMIC_CH(channel_id)) && (channel_id >= d->max_channels)) {
-		dev_err(d->slave.dev, "channel id invalid %s %d\n", __func__, __LINE__);
+	if ((!DMA350_DYNAMIC_CH(channel_id)) &&
+	    (channel_id >= d->max_channels)) {
+		dev_err(d->slave.dev, "channel id invalid %s %d\n", __func__,
+			__LINE__);
 		return NULL;
 	}
 
 	if (request >= d->max_requests) {
-		dev_err(d->slave.dev, "request id invalid %s %d\n", __func__, __LINE__);
+		dev_err(d->slave.dev, "request id invalid %s %d\n", __func__,
+			__LINE__);
 		return NULL;
 	}
 	chan = dma_get_any_slave_channel(&d->slave);
@@ -1195,8 +1281,8 @@ static struct dma_chan *arm_dma350_acpi_xlate(struct acpi_dma_spec *dma_spec,
 	request = dma_spec->slave_id;
 	channel_id = dma_spec->chan_id;
 
-	dev_dbg(d->slave.dev, "dma xlate request[%d] channel[%d]\n",
-		request, channel_id);
+	dev_dbg(d->slave.dev, "dma xlate request[%d] channel[%d]\n", request,
+		channel_id);
 
 	if (request >= d->max_requests) {
 		dev_err(d->slave.dev, "request or channel_id overflow\n");
@@ -1240,13 +1326,13 @@ static int arm_dma350_probe(struct platform_device *op)
 	device_property_read_u32(&op->dev, "dma-requests", &d->max_requests);
 	if (!d->max_requests || !d->max_channels)
 		return -EINVAL;
-	if (!device_property_read_u32_array(&op->dev, "arm,reg-map",
-					    out_val, ARRAY_SIZE(out_val))) {
+	if (!device_property_read_u32_array(&op->dev, "arm,reg-map", out_val,
+					    ARRAY_SIZE(out_val))) {
 		d->map.reg_host_addr = out_val[0];
 		d->map.reg_remote_addr = out_val[1];
 	}
-	if (!device_property_read_u32_array(&op->dev, "arm,ram-map",
-					    out_val, ARRAY_SIZE(out_val))) {
+	if (!device_property_read_u32_array(&op->dev, "arm,ram-map", out_val,
+					    ARRAY_SIZE(out_val))) {
 		d->map.ram_host_addr = out_val[0];
 		d->map.ram_remote_addr = out_val[1];
 	}
@@ -1271,7 +1357,8 @@ static int arm_dma350_probe(struct platform_device *op)
 	if (!ACPI_COMPANION(&op->dev)) {
 		ret = of_reserved_mem_device_init(&op->dev);
 		if (ret && ret != -ENODEV) {
-			dev_err(&op->dev, "Failed to init reserved mem for DMA\n");
+			dev_err(&op->dev,
+				"Failed to init reserved mem for DMA\n");
 			return ret;
 		}
 	}
@@ -1282,22 +1369,22 @@ static int arm_dma350_probe(struct platform_device *op)
 	}
 
 	d->irq = platform_get_irq(op, 0);
-	ret = devm_request_irq(&op->dev, d->irq, arm_dma350_int_handler,
-			       0, DRIVER_NAME, d);
+	ret = devm_request_irq(&op->dev, d->irq, arm_dma350_int_handler, 0,
+			       DRIVER_NAME, d);
 	if (ret)
 		return ret;
 
 	/* A DMA memory pool for LLIs, align on 32-byte boundary */
-	d->pool = dmam_pool_create(DRIVER_NAME, &op->dev,
-				   LLI_BLOCK_SIZE, 32, 0);
+	d->pool =
+		dmam_pool_create(DRIVER_NAME, &op->dev, LLI_BLOCK_SIZE, 32, 0);
 	if (!d->pool) {
 		dev_err(&op->dev, "alloc dma pool failed\n");
 		return -ENOMEM;
 	}
 
 	/* init phy channel */
-	d->phy = devm_kcalloc(&op->dev,
-		d->max_channels, sizeof(struct arm_dma350_phy), GFP_KERNEL);
+	d->phy = devm_kcalloc(&op->dev, d->max_channels,
+			      sizeof(struct arm_dma350_phy), GFP_KERNEL);
 	if (!d->phy)
 		return -ENOMEM;
 
@@ -1351,12 +1438,12 @@ static int arm_dma350_probe(struct platform_device *op)
 	d->slave.copy_align = DMA_ALIGN;
 	d->slave.src_addr_widths = ARM_DMA350_BUSWIDTHS;
 	d->slave.dst_addr_widths = ARM_DMA350_BUSWIDTHS;
-	d->slave.directions = BIT(DMA_MEM_TO_MEM) | BIT(DMA_MEM_TO_DEV)
-	    | BIT(DMA_DEV_TO_MEM);
+	d->slave.directions = BIT(DMA_MEM_TO_MEM) | BIT(DMA_MEM_TO_DEV) |
+			      BIT(DMA_DEV_TO_MEM);
 	d->slave.residue_granularity = DMA_RESIDUE_GRANULARITY_SEGMENT;
 	/* init virtual channel */
-	d->chans = devm_kcalloc(&op->dev,
-		d->max_requests, sizeof(struct arm_dma350_chan), GFP_KERNEL);
+	d->chans = devm_kcalloc(&op->dev, d->max_requests,
+				sizeof(struct arm_dma350_chan), GFP_KERNEL);
 	if (!d->chans)
 		return -ENOMEM;
 
@@ -1412,7 +1499,7 @@ clk_dis:
 	return ret;
 }
 
-static int arm_dma350_remove(struct platform_device *op)
+static void arm_dma350_remove(struct platform_device *op)
 {
 	struct arm_dma350_chan *c, *cn;
 	struct arm_dma350_dev *d = platform_get_drvdata(op);
@@ -1423,15 +1510,14 @@ static int arm_dma350_remove(struct platform_device *op)
 	dma_async_device_unregister(&d->slave);
 	of_dma_controller_free((&op->dev)->of_node);
 
-	list_for_each_entry_safe(c, cn, &d->slave.channels, vc.chan.device_node) {
+	list_for_each_entry_safe(c, cn, &d->slave.channels,
+				 vc.chan.device_node) {
 		list_del(&c->vc.chan.device_node);
 	}
 	if (d->is_clk_enable_atomic)
 		clk_disable(d->clk);
 	else
 		clk_disable_unprepare(d->clk);
-
-	return 0;
 }
 
 static int arm_dma350_runtime_suspend_dev(struct device *dev)
@@ -1505,10 +1591,9 @@ static int arm_dma350_resume_dev(struct device *dev)
 #endif
 
 static const struct dev_pm_ops arm_dma350_pmops = {
-	SET_SYSTEM_SLEEP_PM_OPS(arm_dma350_suspend_dev,
-				arm_dma350_resume_dev)
-	    SET_RUNTIME_PM_OPS(arm_dma350_runtime_suspend_dev,
-			       arm_dma350_runtime_resume_dev, NULL)
+	SET_SYSTEM_SLEEP_PM_OPS(arm_dma350_suspend_dev, arm_dma350_resume_dev)
+		SET_RUNTIME_PM_OPS(arm_dma350_runtime_suspend_dev,
+				   arm_dma350_runtime_resume_dev, NULL)
 };
 
 static struct platform_driver arm_dma350_driver = {

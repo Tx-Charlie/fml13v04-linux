@@ -86,7 +86,7 @@ int scmi_device_opp_table_parse(struct device *dev)
 	perf_ops = pd->perf_ops;
 	ph = pd->ph;
 
-	ret = perf_ops->device_opps_add(ph, dev);
+	ret = perf_ops->device_opps_add(ph, dev, pd->domain_id);
 	if (ret) {
 		dev_err(dev, "failed to add opps to the device\n");
 		return ret;
