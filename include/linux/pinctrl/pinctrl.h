@@ -26,6 +26,7 @@ struct pinconf_ops;
 struct pinctrl_dev;
 struct pinctrl_map;
 struct pinmux_ops;
+struct pinctrl_acpi_resource;
 
 /**
  * struct pingroup - provides information on pingroup
@@ -40,12 +41,11 @@ struct pingroup {
 };
 
 /* Convenience macro to define a single named or anonymous pingroup */
-#define PINCTRL_PINGROUP(_name, _pins, _npins)	\
-(struct pingroup) {				\
-	.name = _name,				\
-	.pins = _pins,				\
-	.npins = _npins,			\
-}
+#define PINCTRL_PINGROUP(_name, _pins, _npins)                 \
+	(struct pingroup)                                      \
+	{                                                      \
+		.name = _name, .pins = _pins, .npins = _npins, \
+	}
 
 /**
  * struct pinctrl_pin_desc - boards/machines provide information on their
@@ -107,20 +107,24 @@ struct pinctrl_gpio_range {
  *	not support device tree.
  */
 struct pinctrl_ops {
-	int (*get_groups_count) (struct pinctrl_dev *pctldev);
-	const char *(*get_group_name) (struct pinctrl_dev *pctldev,
-				       unsigned int selector);
-	int (*get_group_pins) (struct pinctrl_dev *pctldev,
-			       unsigned int selector,
-			       const unsigned int **pins,
-			       unsigned int *num_pins);
-	void (*pin_dbg_show) (struct pinctrl_dev *pctldev, struct seq_file *s,
-			      unsigned int offset);
-	int (*dt_node_to_map) (struct pinctrl_dev *pctldev,
-			       struct device_node *np_config,
-			       struct pinctrl_map **map, unsigned int *num_maps);
-	void (*dt_free_map) (struct pinctrl_dev *pctldev,
-			     struct pinctrl_map *map, unsigned int num_maps);
+	int (*get_groups_count)(struct pinctrl_dev *pctldev);
+	const char *(*get_group_name)(struct pinctrl_dev *pctldev,
+				      unsigned int selector);
+	int (*get_group_pins)(struct pinctrl_dev *pctldev,
+			      unsigned int selector, const unsigned int **pins,
+			      unsigned int *num_pins);
+	void (*pin_dbg_show)(struct pinctrl_dev *pctldev, struct seq_file *s,
+			     unsigned int offset);
+	int (*dt_node_to_map)(struct pinctrl_dev *pctldev,
+			      struct device_node *np_config,
+			      struct pinctrl_map **map, unsigned int *num_maps);
+	void (*dt_free_map)(struct pinctrl_dev *pctldev,
+			    struct pinctrl_map *map, unsigned int num_maps);
+	int (*acpi_node_to_map)(struct pinctrl_dev *pctldev,
+				struct pinctrl_acpi_resource *resource,
+				struct pinctrl_map **map, unsigned int *num_maps);
+	void (*acpi_free_map)(struct pinctrl_dev *pctldev,
+			      struct pinctrl_map *map, unsigned int num_maps);
 };
 
 /**
@@ -173,38 +177,40 @@ extern int pinctrl_enable(struct pinctrl_dev *pctldev);
 
 /* Please use pinctrl_register_and_init() and pinctrl_enable() instead */
 extern struct pinctrl_dev *pinctrl_register(const struct pinctrl_desc *pctldesc,
-				struct device *dev, void *driver_data);
+					    struct device *dev,
+					    void *driver_data);
 
 extern void pinctrl_unregister(struct pinctrl_dev *pctldev);
 
 extern int devm_pinctrl_register_and_init(struct device *dev,
-				const struct pinctrl_desc *pctldesc,
-				void *driver_data,
-				struct pinctrl_dev **pctldev);
+					  const struct pinctrl_desc *pctldesc,
+					  void *driver_data,
+					  struct pinctrl_dev **pctldev);
 
 /* Please use devm_pinctrl_register_and_init() instead */
-extern struct pinctrl_dev *devm_pinctrl_register(struct device *dev,
-				const struct pinctrl_desc *pctldesc,
-				void *driver_data);
+extern struct pinctrl_dev *
+devm_pinctrl_register(struct device *dev, const struct pinctrl_desc *pctldesc,
+		      void *driver_data);
 
 extern void pinctrl_add_gpio_range(struct pinctrl_dev *pctldev,
-				struct pinctrl_gpio_range *range);
+				   struct pinctrl_gpio_range *range);
 extern void pinctrl_add_gpio_ranges(struct pinctrl_dev *pctldev,
-				struct pinctrl_gpio_range *ranges,
-				unsigned int nranges);
+				    struct pinctrl_gpio_range *ranges,
+				    unsigned int nranges);
 extern void pinctrl_remove_gpio_range(struct pinctrl_dev *pctldev,
-				struct pinctrl_gpio_range *range);
+				      struct pinctrl_gpio_range *range);
 
-extern struct pinctrl_dev *pinctrl_find_and_add_gpio_range(const char *devname,
-		struct pinctrl_gpio_range *range);
+extern struct pinctrl_dev *
+pinctrl_find_and_add_gpio_range(const char *devname,
+				struct pinctrl_gpio_range *range);
 extern struct pinctrl_gpio_range *
-pinctrl_find_gpio_range_from_pin(struct pinctrl_dev *pctldev,
-				 unsigned int pin);
+pinctrl_find_gpio_range_from_pin(struct pinctrl_dev *pctldev, unsigned int pin);
 extern int pinctrl_get_group_pins(struct pinctrl_dev *pctldev,
-				  const char *pin_group, const unsigned int **pins,
+				  const char *pin_group,
+				  const unsigned int **pins,
 				  unsigned int *num_pins);
 
-#define PINFUNCTION_FLAG_GPIO	BIT(0)
+#define PINFUNCTION_FLAG_GPIO BIT(0)
 
 /**
  * struct pinfunction - Description about a function
@@ -215,33 +221,30 @@ extern int pinctrl_get_group_pins(struct pinctrl_dev *pctldev,
  */
 struct pinfunction {
 	const char *name;
-	const char * const *groups;
+	const char *const *groups;
 	size_t ngroups;
 	unsigned long flags;
 };
 
 /* Convenience macro to define a single named pinfunction */
-#define PINCTRL_PINFUNCTION(_name, _groups, _ngroups)	\
-(struct pinfunction) {					\
-		.name = (_name),			\
-		.groups = (_groups),			\
-		.ngroups = (_ngroups),			\
+#define PINCTRL_PINFUNCTION(_name, _groups, _ngroups)                        \
+	(struct pinfunction)                                                 \
+	{                                                                    \
+		.name = (_name), .groups = (_groups), .ngroups = (_ngroups), \
 	}
 
 /* Same as PINCTRL_PINFUNCTION() but for the GPIO category of functions */
-#define PINCTRL_GPIO_PINFUNCTION(_name, _groups, _ngroups)	\
-(struct pinfunction) {						\
-		.name = (_name),				\
-		.groups = (_groups),				\
-		.ngroups = (_ngroups),				\
-		.flags = PINFUNCTION_FLAG_GPIO,			\
+#define PINCTRL_GPIO_PINFUNCTION(_name, _groups, _ngroups)                   \
+	(struct pinfunction)                                                 \
+	{                                                                    \
+		.name = (_name), .groups = (_groups), .ngroups = (_ngroups), \
+		.flags = PINFUNCTION_FLAG_GPIO,                              \
 	}
 
 #if IS_ENABLED(CONFIG_OF) && IS_ENABLED(CONFIG_PINCTRL)
 extern struct pinctrl_dev *of_pinctrl_get(struct device_node *np);
 #else
-static inline
-struct pinctrl_dev *of_pinctrl_get(struct device_node *np)
+static inline struct pinctrl_dev *of_pinctrl_get(struct device_node *np)
 {
 	return NULL;
 }

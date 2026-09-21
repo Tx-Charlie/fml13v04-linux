@@ -6,31 +6,34 @@
 #include <linux/irqchip.h>
 #include <linux/syscore_ops.h>
 
-#define SKY1_SIP_PDC                     0xC2000009
-#define SKY1_SIP_CONFIG_PDC_SET_WAKE     0x02
+#define SKY1_SIP_PDC 0xC2000009
+#define SKY1_SIP_CONFIG_PDC_SET_WAKE 0x02
 
-#define PDC_MAX_IRQS            1000
+#define PDC_MAX_IRQS 1000
 
 struct irq_domain *cix_domain;
 
 struct pdcv1_irqchip_data {
-	struct raw_spinlock	rlock;
-	void __iomem		*pdc_base;
+	struct raw_spinlock rlock;
+	void __iomem *pdc_base;
 };
 
-static int pdcv1_wakeup_source_save(void)
+static int pdcv1_wakeup_source_save(void *data)
 {
 	return 0;
 }
 
-static void pdcv1_wakeup_source_restore(void)
+static void pdcv1_wakeup_source_restore(void *data)
 {
-	return;
 }
 
 static struct syscore_ops sky1_pdc_syscore_ops = {
-	.suspend	= pdcv1_wakeup_source_save,
-	.resume		= pdcv1_wakeup_source_restore,
+	.suspend = pdcv1_wakeup_source_save,
+	.resume = pdcv1_wakeup_source_restore,
+};
+
+static struct syscore sky1_pdc_syscore = {
+	.ops = &sky1_pdc_syscore_ops,
 };
 
 static int sky1_pdc_irq_set_wake(struct irq_data *d, unsigned int on)
@@ -40,30 +43,29 @@ static int sky1_pdc_irq_set_wake(struct irq_data *d, unsigned int on)
 	unsigned long flags;
 
 	raw_spin_lock_irqsave(&cd->rlock, flags);
-	arm_smccc_smc(SKY1_SIP_PDC, SKY1_SIP_CONFIG_PDC_SET_WAKE,
-		d->hwirq - 32, on, 0, 0, 0, 0, &res);
+	arm_smccc_smc(SKY1_SIP_PDC, SKY1_SIP_CONFIG_PDC_SET_WAKE, d->hwirq - 32,
+		      on, 0, 0, 0, 0, &res);
 	raw_spin_unlock_irqrestore(&cd->rlock, flags);
 
 	return 0;
 }
 
 static struct irq_chip pdcv1_irqchip_data_chip = {
-	.name			= "PDCv1",
-	.irq_eoi		= irq_chip_eoi_parent,
-	.irq_mask		= irq_chip_mask_parent,
-	.irq_unmask		= irq_chip_unmask_parent,
-	.irq_set_wake		= sky1_pdc_irq_set_wake,
-	.irq_retrigger		= irq_chip_retrigger_hierarchy,
-	.irq_set_type		= irq_chip_set_type_parent,
+	.name = "PDCv1",
+	.irq_eoi = irq_chip_eoi_parent,
+	.irq_mask = irq_chip_mask_parent,
+	.irq_unmask = irq_chip_unmask_parent,
+	.irq_set_wake = sky1_pdc_irq_set_wake,
+	.irq_retrigger = irq_chip_retrigger_hierarchy,
+	.irq_set_type = irq_chip_set_type_parent,
 #ifdef CONFIG_SMP
-	.irq_set_affinity	= irq_chip_set_affinity_parent,
+	.irq_set_affinity = irq_chip_set_affinity_parent,
 #endif
 };
 
 static int sky1_pdc_domain_translate(struct irq_domain *d,
-				      struct irq_fwspec *fwspec,
-				      unsigned long *hwirq,
-				      unsigned int *type)
+				     struct irq_fwspec *fwspec,
+				     unsigned long *hwirq, unsigned int *type)
 {
 	if (is_of_node(fwspec->fwnode)) {
 		if (fwspec->param_count != 3)
@@ -77,7 +79,7 @@ static int sky1_pdc_domain_translate(struct irq_domain *d,
 		*type = fwspec->param[2];
 		return 0;
 	} else if (is_acpi_device_node(fwspec->fwnode)) {
-		if(fwspec->param_count != 2)
+		if (fwspec->param_count != 2)
 			return -EINVAL;
 
 		if (fwspec->param[0] < 32) {
@@ -95,9 +97,8 @@ static int sky1_pdc_domain_translate(struct irq_domain *d,
 	return -EINVAL;
 }
 
-static int sky1_pdc_domain_alloc(struct irq_domain *domain,
-				  unsigned int irq, unsigned int nr_irqs,
-				  void *data)
+static int sky1_pdc_domain_alloc(struct irq_domain *domain, unsigned int irq,
+				 unsigned int nr_irqs, void *data)
 {
 	struct irq_fwspec *fwspec = data;
 	struct irq_fwspec parent_fwspec;
@@ -115,7 +116,8 @@ static int sky1_pdc_domain_alloc(struct irq_domain *domain,
 
 	for (i = 0; i < nr_irqs; i++) {
 		irq_domain_set_hwirq_and_chip(domain, irq + i, hwirq + i,
-				&pdcv1_irqchip_data_chip, domain->host_data);
+					      &pdcv1_irqchip_data_chip,
+					      domain->host_data);
 	}
 
 	parent_fwspec = *fwspec;
@@ -126,18 +128,18 @@ static int sky1_pdc_domain_alloc(struct irq_domain *domain,
 }
 
 static const struct irq_domain_ops pdcv1_irqchip_data_domain_ops = {
-	.translate	= sky1_pdc_domain_translate,
-	.alloc		= sky1_pdc_domain_alloc,
-	.free		= irq_domain_free_irqs_common,
+	.translate = sky1_pdc_domain_translate,
+	.alloc = sky1_pdc_domain_alloc,
+	.free = irq_domain_free_irqs_common,
 };
 
 static const struct of_device_id pdcv1_of_match[] = {
-	{ .compatible = "cix,sky1-pdc",  .data = (const void *) 2 },
+	{ .compatible = "cix,sky1-pdc", .data = (const void *)2 },
 	{ /* END */ }
 };
 
 static int __init sky1_pdc_irqchip_init(struct device_node *node,
-			       struct device_node *parent)
+					struct device_node *parent)
 {
 	struct irq_domain *parent_domain, *domain;
 	struct pdcv1_irqchip_data *cd;
@@ -175,18 +177,20 @@ static int __init sky1_pdc_irqchip_init(struct device_node *node,
 		return -ENOMEM;
 	}
 
-	domain = irq_domain_add_hierarchy(parent_domain, 0, PDC_MAX_IRQS,
-				node, &pdcv1_irqchip_data_domain_ops, cd);
+	domain = irq_domain_create_hierarchy(parent_domain, 0, PDC_MAX_IRQS,
+					     of_fwnode_handle(node),
+					     &pdcv1_irqchip_data_domain_ops,
+					     cd);
 	if (!domain) {
 		iounmap(cd->pdc_base);
 		kfree(cd);
 		return -ENOMEM;
 	}
-	irq_set_default_host(domain);
+	irq_set_default_domain(domain);
 
 	cix_domain = domain;
 
-	register_syscore_ops(&sky1_pdc_syscore_ops);
+	register_syscore(&sky1_pdc_syscore);
 
 	/*
 	 * Clear the OF_POPULATED flag set in of_irq_init so that
@@ -210,7 +214,8 @@ static int __init sky1_acpi_pdc_irqchip_init(struct platform_device *pdev)
 	}
 
 	raw_spin_lock_init(&cd->rlock);
-	struct resource *res_dp = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	struct resource *res_dp =
+		platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	cd->pdc_base = devm_ioremap_resource(&pdev->dev, res_dp);
 	if (!cd->pdc_base) {
 		pr_err("%pACPI: unable to map pdc registers\n", pdev);
@@ -227,10 +232,10 @@ static int __init sky1_acpi_pdc_irqchip_init(struct platform_device *pdev)
 		return -ENOMEM;
 	}
 
-	irq_set_default_host(domain);
+	irq_set_default_domain(domain);
 	cix_domain = domain;
 
-	register_syscore_ops(&sky1_pdc_syscore_ops);
+	register_syscore(&sky1_pdc_syscore);
 
 	return 0;
 }
@@ -252,7 +257,8 @@ static struct platform_driver pdc_platform_driver = {
 		    .acpi_match_table = ACPI_PTR(pdcv1_acpi_match) },
 };
 
-static int __init sky1_pdc_init(void) {
+static int __init sky1_pdc_init(void)
+{
 	return platform_driver_register(&pdc_platform_driver);
 }
 

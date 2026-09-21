@@ -13,10 +13,10 @@
 #define POWER_OFF (0)
 
 struct rfkill_wlan_data {
-	const char		*name;
-	struct gpio_desc	*vbat_gpio;
-	struct gpio_desc	*poweren_gpio;
-	struct gpio_desc	*wakehost_gpio;
+	const char *name;
+	struct gpio_desc *vbat_gpio;
+	struct gpio_desc *poweren_gpio;
+	struct gpio_desc *wakehost_gpio;
 };
 static struct rfkill_wlan_data *g_rfkill = NULL;
 
@@ -30,12 +30,12 @@ int rfkill_set_wifi_soc_power(int on)
 		return -ENODEV;
 	}
 
-	if (on) 
+	if (on)
 		gpiod_set_value(rfkill->vbat_gpio, 1);
 	else
 		gpiod_set_value(rfkill->vbat_gpio, 0);
 
-	LOG("%s: %s\n", __func__, on? "on" : "off");
+	LOG("%s: %s\n", __func__, on ? "on" : "off");
 	return ret;
 }
 EXPORT_SYMBOL(rfkill_set_wifi_soc_power);
@@ -55,7 +55,7 @@ int rfkill_set_wifi_power(int on)
 	else
 		gpiod_set_value(rfkill->poweren_gpio, 0);
 
-	LOG("%s: %s\n", __func__, on? "on" : "off");
+	LOG("%s: %s\n", __func__, on ? "on" : "off");
 	return ret;
 }
 EXPORT_SYMBOL(rfkill_set_wifi_power);
@@ -98,12 +98,10 @@ static int rfkill_wlan_probe(struct platform_device *pdev)
 	LOG("%s: Inited\n", __func__);
 
 	return 0;
-
 }
 
-static int rfkill_wlan_remove(struct platform_device *pdev)
+static void rfkill_wlan_remove(struct platform_device *pdev)
 {
-	return 0;
 }
 
 static struct of_device_id wlan_platdata_of_match[] = {
@@ -113,10 +111,10 @@ static struct of_device_id wlan_platdata_of_match[] = {
 MODULE_DEVICE_TABLE(of, wlan_platdata_of_match);
 
 static const struct acpi_device_id rfkill_acpi_ids[] = {
-	{"CIXH7000", 0 },
-	{ },
+	{ "CIXH7000", 0 },
+	{},
 };
-MODULE_DEVICE_TABLE(acpi, macb_acpi_ids);
+MODULE_DEVICE_TABLE(acpi, rfkill_acpi_ids);
 
 static struct platform_driver rfkill_gpio_driver = {
 	.probe = rfkill_wlan_probe,

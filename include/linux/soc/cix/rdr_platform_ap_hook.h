@@ -62,8 +62,8 @@
 		DECLARE_AP_HOOK(worker, TP_PROTO(u64 address, u32 dir),        \
 				TP_ARGS(address, dir), HK_WORKER);)
 
-#define MEM_ALLOC 1
-#define MEM_FREE 0
+#define RDR_MEM_ALLOC 1
+#define RDR_MEM_FREE 0
 
 enum hook_type {
 	HK_IRQ = 0,
