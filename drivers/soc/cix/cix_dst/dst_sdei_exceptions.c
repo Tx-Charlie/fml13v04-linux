@@ -143,7 +143,6 @@ late_initcall(dst_wdt_sdei_init);
 
 static int __init plat_sdei_init(void)
 {
-	sdei_init();
 	return 0;
 }
 
