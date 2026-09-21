@@ -99,11 +99,10 @@ static int cix_ec_light_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cix_ec_light_remove(struct platform_device *dev)
+static void cix_ec_light_remove(struct platform_device *dev)
 {
 	struct iio_dev *indio_dev = platform_get_drvdata(dev);
 	iio_device_unregister(indio_dev);
-	return 0;
 }
 
 #ifdef CONFIG_OF

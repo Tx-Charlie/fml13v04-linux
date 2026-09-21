@@ -236,9 +236,8 @@ static int cix_cpufreq_driver_probe(struct platform_device *pdev)
 	return ret;
 }
 
-static int cix_cpufreq_driver_remove(struct platform_device *pdev)
+static void cix_cpufreq_driver_remove(struct platform_device *pdev)
 {
-	return cpufreq_unregister_driver(&cpufreq_cix_driver);
 }
 
 static const struct of_device_id cix_cpufreq_match[] = {

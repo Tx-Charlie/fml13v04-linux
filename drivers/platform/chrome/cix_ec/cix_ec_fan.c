@@ -149,14 +149,13 @@ static int cix_ec_fan_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cix_ec_fan_remove(struct platform_device *pdev)
+static void cix_ec_fan_remove(struct platform_device *pdev)
 {
 	struct cix_ec_fan_data *fd = cix_ec_fan_data;
 
 	sysfs_remove_file(fd->cix_kobj, &dev_attr_mode.attr);
 	sysfs_remove_file(fd->cix_kobj, &dev_attr_available_mode.attr);
 	kobject_put(fd->cix_kobj);
-	return 0;
 }
 
 #ifdef CONFIG_OF

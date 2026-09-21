@@ -177,7 +177,7 @@ static int __init cix_acpi_display_probe(void)
        return 0;
 }
 
-static int cix_display_remove(struct platform_device *pdev)
+static void cix_display_remove(struct platform_device *pdev)
 {
        struct device *dev = &pdev->dev;
 

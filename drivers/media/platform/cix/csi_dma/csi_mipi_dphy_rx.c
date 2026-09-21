@@ -241,6 +241,7 @@ static int mipi_dphy_rx_s_power(struct v4l2_subdev *sd, int on)
 
 static int
 mipi_dphy_rx_g_frame_interval(struct v4l2_subdev *sd,
+			      struct v4l2_subdev_state *sd_state,
 			      struct v4l2_subdev_frame_interval *interval)
 {
 	struct dphy_rx *dphy = v4l2_subdev_to_dphy_rx(sd);
@@ -255,6 +256,7 @@ mipi_dphy_rx_g_frame_interval(struct v4l2_subdev *sd,
 
 static int
 mipi_dphy_rx_s_frame_interval(struct v4l2_subdev *sd,
+			      struct v4l2_subdev_state *sd_state,
 			      struct v4l2_subdev_frame_interval *interval)
 {
 	struct dphy_rx *dphy = v4l2_subdev_to_dphy_rx(sd);
@@ -365,6 +367,8 @@ static const struct v4l2_subdev_pad_ops mipi_dphy_rx_pad_ops = {
 	.enum_frame_interval = mipi_dphy_rx_enum_frame_interval,
 	.get_fmt = mipi_dphy_rx_get_fmt,
 	.set_fmt = mipi_dphy_rx_set_fmt,
+	.get_frame_interval = mipi_dphy_rx_g_frame_interval,
+	.set_frame_interval = mipi_dphy_rx_s_frame_interval,
 };
 
 static const struct v4l2_subdev_core_ops mipi_dphy_rx_core_ops = {
@@ -372,8 +376,6 @@ static const struct v4l2_subdev_core_ops mipi_dphy_rx_core_ops = {
 };
 
 static const struct v4l2_subdev_video_ops mipi_dphy_rx_video_ops = {
-	.g_frame_interval = mipi_dphy_rx_g_frame_interval,
-	.s_frame_interval = mipi_dphy_rx_s_frame_interval,
 	.s_stream = mipi_dphy_rx_s_stream,
 };
 
@@ -565,7 +567,7 @@ static int mipi_dphy_rx_probe(struct platform_device *pdev)
 	return ret;
 }
 
-static int mipi_dphy_rx_remove(struct platform_device *pdev)
+static void mipi_dphy_rx_remove(struct platform_device *pdev)
 {
 	struct dphy_rx *dphy = platform_get_drvdata(pdev);
 	struct v4l2_subdev *sd = &dphy->subdev;
@@ -580,7 +582,6 @@ static int mipi_dphy_rx_remove(struct platform_device *pdev)
 
 	dev_info(dev, "mipi_dphy_rx remove exit\n");
 
-	return 0;
 }
 
 static int mipi_dphy_dev_rpm_suspend(struct device *dev)

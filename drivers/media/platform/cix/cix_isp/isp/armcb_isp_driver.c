@@ -270,7 +270,7 @@ EXIT_RET:
 	return res;
 }
 
-static int armcb_ispdrv_remove(struct platform_device *pdev)
+static void armcb_ispdrv_remove(struct platform_device *pdev)
 {
 	int res = 0;
 	struct armcb_isp_subdev *p_ispdev = platform_get_drvdata(pdev);
@@ -282,7 +282,6 @@ static int armcb_ispdrv_remove(struct platform_device *pdev)
 #endif
 	}
 
-	return res;
 }
 
 static const struct of_device_id armcb_isp_match[] = {

@@ -1288,7 +1288,7 @@ err_clk_dis:
  *
  * Return: 0 always
  */
-static int armcb_i2c_remove(struct platform_device *pdev)
+static void armcb_i2c_remove(struct platform_device *pdev)
 {
 #ifndef QEMU_ON_VEXPRESS
 	struct armcb_i2c *id = platform_get_drvdata(pdev);
@@ -1301,7 +1301,6 @@ static int armcb_i2c_remove(struct platform_device *pdev)
 	clk_notifier_unregister(id->clk, &id->clk_rate_change_nb);
 	clk_disable_unprepare(id->clk);
 #endif
-	return 0;
 }
 
 static struct platform_driver armcb_i2c_drv = {

@@ -396,7 +396,7 @@ void do_show_task(struct task_struct *task, unsigned int flag, int d_state_time)
 			upload.tgid = task->tgid;
 			upload.duration = d_state_time;
 			memset(upload.name, 0, sizeof(upload.name));
-			strncpy(upload.name, task->comm, sizeof(upload.name));
+			strscpy(upload.name, task->comm, sizeof(upload.name));
 			upload.flag = flag;
 			if (READ_ONCE(task->__state) & TASK_FROZEN)
 				upload.flag = (upload.flag | FLAG_PF_FROZEN);
@@ -419,7 +419,7 @@ static void create_taskitem(struct task_item *taskitem,
 	taskitem->pid = task->pid;
 	taskitem->tgid = task->tgid;
 	memset(taskitem->name, 0, sizeof(taskitem->name));
-	strncpy(taskitem->name, task->comm, sizeof(taskitem->name));
+	strscpy(taskitem->name, task->comm, sizeof(taskitem->name));
 	taskitem->switch_count = task->nvcsw + task->nivcsw;
 	taskitem->dump_wa = 0; /* whitelist or applist task dump times */
 	taskitem->panic_wa = 0; /* whitelist or applist task panic times */
@@ -535,7 +535,7 @@ static void htbase_report_zrhung(unsigned int event)
 	if (event & HUNGTASK_EVENT_WHITELIST) {
 		snprintf(report_buf_tag, sizeof(report_buf_tag),
 			 "hungtask_whitelist_%d", report_zrhung_id);
-		strncpy(report_name, upload.name, TASK_COMM_LEN);
+		strscpy(report_name, upload.name, TASK_COMM_LEN);
 		report_pid = upload.pid;
 		report_tasktype = TASK_TYPE_WHITE;
 		report_hungtime = whitelist_dump_cnt * HEARTBEAT_TIME;
@@ -621,7 +621,7 @@ static void update_panic_task(struct task_item *item)
 	upload.pid = item->pid;
 	upload.tgid = item->tgid;
 	memset(upload.name, 0, sizeof(upload.name));
-	strncpy(upload.name, item->name, sizeof(upload.name));
+	strscpy(upload.name, item->name, sizeof(upload.name));
 }
 
 static void deal_task(struct task_item *item, struct task_struct *task, bool is_called)
@@ -817,7 +817,7 @@ static ssize_t htbase_enable_store(struct kobject *kobj,
 	p = memchr(buf, '\n', count);
 	len = p ? (size_t)(p - buf) : count;
 	memset(tmp, 0, sizeof(tmp));
-	strncpy(tmp, buf, len);
+	strscpy(tmp, buf, len);
 	if (!strncmp(tmp, "on", strlen(tmp))) {
 		hungtask_enable = HT_ENABLE;
 		pr_info("set hungtask_enable to enable\n");
@@ -872,7 +872,7 @@ static void htbase_monitorlist_update(char **cur)
 	for (; ; ) {
 		token = strsep(cur, ",");
 		if (token && strlen(token)) {
-			strncpy(whitetmplist[index].name, token, TASK_COMM_LEN);
+			strscpy(whitetmplist[index].name, token, TASK_COMM_LEN);
 			if (strlen(whitetmplist[index].name) > 0)
 				whitelist_empty = false;
 			index++;
@@ -914,7 +914,7 @@ static ssize_t htbase_monitorlist_store(struct kobject *kobj,
 
 	memset(all_buf, 0, sizeof(all_buf));
 	len =  len > WHITELIST_STORE_LEN ? WHITELIST_STORE_LEN : len;
-	strncpy(all_buf, buf, len);
+	strscpy(all_buf, buf, len);
 	p = strsep(&cur, ",");
 	if (!cur) {
 		pr_err("string is not correct\n");

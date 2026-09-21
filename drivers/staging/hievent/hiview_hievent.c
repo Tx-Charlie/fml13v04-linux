@@ -185,7 +185,7 @@ int hievent_put_string(struct hiview_hievent *event,
 		return -ENOMEM;
 
 	(void)memset(payload->value, 0, len + 1);
-	if (strncpy(payload->value, value, len) > 0)
+	if (strscpy(payload->value, value, len) > 0)
 		payload->value[len] = '\0';
 
 	return 0;

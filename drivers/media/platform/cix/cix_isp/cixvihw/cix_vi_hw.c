@@ -936,13 +936,12 @@ static int cix_vi_hw_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int cix_vi_hw_remove(struct platform_device *pdev)
+static void cix_vi_hw_remove(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 
 	dev_info(dev, "csi rcsu hw remove enter\n");
 	mutex_destroy(&cix_vi_hw_info->mutex);
-	return 0;
 }
 
 static struct platform_driver cix_vi_hw_driver = {

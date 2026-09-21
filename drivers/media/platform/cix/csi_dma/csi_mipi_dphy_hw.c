@@ -526,12 +526,11 @@ static int mipi_dphy_hw_probe(struct platform_device *pdev)
 	return ret;
 }
 
-static int mipi_dphy_hw_remove(struct platform_device *pdev)
+static void mipi_dphy_hw_remove(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 
 	dev_info(dev, "mipi-dphy hw remove enter\n");
-	return 0;
 }
 
 /*for pm interface ,here work at full mode, if work at split mode need more process*/
