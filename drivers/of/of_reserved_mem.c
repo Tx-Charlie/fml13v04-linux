@@ -42,7 +42,6 @@ void __init fdt_reserved_mem_save_node(unsigned long node, const char *uname,
 		return;
 	}
 
-	rmem->fdt_node = node;
 	rmem->name = uname;
 	rmem->base = base;
 	rmem->size = size;
