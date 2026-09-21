@@ -213,18 +213,18 @@ static int cache_excep_probe_dev(struct platform_device *pdev)
 	return 0;
 }
 
-static int __exit cache_excep_remove_dev(struct platform_device *pdev)
+static void __exit cache_excep_remove_dev(struct platform_device *pdev)
 {
-	int ret = 0;
 	struct cache_excep_drvdata *drvdata = dev_get_drvdata(&pdev->dev);
 
 	if (drvdata && cpu_online(drvdata->cpu)) {
+		int ret;
+
 		ret = smp_call_function_single(drvdata->cpu, cache_excep_uninit,
 					       drvdata, 1);
 		if (ret)
 			dev_err(&pdev->dev, "%s: ret=%d", __func__, ret);
 	}
-	return ret;
 }
 
 static int cache_excep_suspend(struct device *dev)
@@ -255,14 +255,12 @@ static SIMPLE_DEV_PM_OPS(cache_excep_pm_ops, cache_excep_suspend,
 
 static const struct of_device_id cache_excp_of_ids[] = {
 	{ .compatible = "cix,sky1_exception_core_cache" },
-	{ }
+	{}
 };
 MODULE_DEVICE_TABLE(of, cache_excp_of_ids);
 
-static const struct acpi_device_id cache_excp_acpi_ids[] = {
-	{ "CIXH10F3", 0 },
-	{ }
-};
+static const struct acpi_device_id cache_excp_acpi_ids[] = { { "CIXH10F3", 0 },
+							     {} };
 MODULE_DEVICE_TABLE(acpi, cache_excp_acpi_ids);
 
 static struct platform_driver cache_core_exception_driver = {

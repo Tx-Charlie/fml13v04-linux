@@ -62,14 +62,12 @@ static int cache_excep_dsu_probe(struct platform_device *pdev)
 	return ret;
 }
 
-static int __exit cache_excep_dsu_remove(struct platform_device *pdev)
+static void __exit cache_excep_dsu_remove(struct platform_device *pdev)
 {
-	int ret = 0;
 	struct cache_excep_drvdata *drvdata = dev_get_drvdata(&pdev->dev);
 
 	if (drvdata)
 		cache_excep_uninit(drvdata);
-	return ret;
 }
 
 static int cache_dsu_excep_suspend(struct device *dev)
@@ -94,13 +92,13 @@ static const struct of_device_id cache_excp_dsu_of_ids[] = {
 	{ .compatible = "cix,sky1_exception_dsu_cache" },
 	{ }
 };
-MODULE_DEVICE_TABLE(of, cache_excp_of_ids);
+MODULE_DEVICE_TABLE(of, cache_excp_dsu_of_ids);
 
 static const struct acpi_device_id cache_excp_dsu_acpi_ids[] = {
 	{ "CIXH10F4", 0 },
 	{  }
 };
-MODULE_DEVICE_TABLE(acpi, cache_excp_acpi_ids);
+MODULE_DEVICE_TABLE(acpi, cache_excp_dsu_acpi_ids);
 
 static struct platform_driver cache_dsu_exception_driver = {
 	.probe		= cache_excep_dsu_probe,

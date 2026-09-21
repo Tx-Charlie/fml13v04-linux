@@ -5,6 +5,7 @@
  *
  */
 #include <drm/drm_atomic.h>
+#include <linux/debugfs.h>
 #include <drm/drm_atomic_helper.h>
 #include <drm/drm_blend.h>
 #include <drm/drm_print.h>
