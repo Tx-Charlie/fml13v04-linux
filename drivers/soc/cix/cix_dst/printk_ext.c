@@ -2,6 +2,9 @@
 // Copyright 2025 Cix Technology Group Co., Ltd.
 
 #include <linux/printk.h>
+#include <linux/jiffies.h>
+#include <linux/time.h>
+#include <linux/hardirq.h>
 #include <linux/sched/task_stack.h>
 #include <linux/soc/cix/printk_ext.h>
 #include "dst_print.h"
@@ -40,7 +43,7 @@ void plat_log_store_add_time(char *logbuf, u32 logsize, u16 *retlen)
 
 	ret = snprintf(logbuf + *retlen, logsize - *retlen - 1,
 		       "[pid:%d,cpu%u,%s]", current->pid, smp_processor_id(),
-		       in_irq() ? "in irq" : current->comm);
+		       in_hardirq() ? "in irq" : current->comm);
 
 	if (ret < 0) {
 		DST_ERR("snprintf_s failed\n");
