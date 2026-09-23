@@ -46,8 +46,10 @@ void __iomem *cdns_pci_hpa_map_bus(struct pci_bus *bus, unsigned int devfn,
 	}
 
 	/* Clear AXI link-down status */
-	regval = cdns_pcie_hpa_readl(pcie, REG_BANK_AXI_SLAVE, CDNS_PCIE_HPA_AT_LINKDOWN);
-	cdns_pcie_hpa_writel(pcie, REG_BANK_AXI_SLAVE, CDNS_PCIE_HPA_AT_LINKDOWN,
+	regval = cdns_pcie_hpa_readl(pcie, REG_BANK_AXI_SLAVE,
+				     CDNS_PCIE_HPA_AT_LINKDOWN);
+	cdns_pcie_hpa_writel(pcie, REG_BANK_AXI_SLAVE,
+			     CDNS_PCIE_HPA_AT_LINKDOWN,
 			     (regval & ~GENMASK(0, 0)));
 
 	/* Update Output registers for AXI region 0 */
@@ -80,16 +82,17 @@ void __iomem *cdns_pci_hpa_map_bus(struct pci_bus *bus, unsigned int devfn,
 }
 
 static struct pci_ops cdns_pcie_hpa_host_ops = {
-	.map_bus	= cdns_pci_hpa_map_bus,
-	.read		= pci_generic_config_read,
-	.write		= pci_generic_config_write,
+	.map_bus = cdns_pci_hpa_map_bus,
+	.read = pci_generic_config_read,
+	.write = pci_generic_config_write,
 };
 
 static void cdns_pcie_hpa_host_enable_ptm_response(struct cdns_pcie *pcie)
 {
 	u32 val;
 
-	val = cdns_pcie_hpa_readl(pcie, REG_BANK_IP_REG, CDNS_PCIE_HPA_LM_PTM_CTRL);
+	val = cdns_pcie_hpa_readl(pcie, REG_BANK_IP_REG,
+				  CDNS_PCIE_HPA_LM_PTM_CTRL);
 	cdns_pcie_hpa_writel(pcie, REG_BANK_IP_REG, CDNS_PCIE_HPA_LM_PTM_CTRL,
 			     val | CDNS_PCIE_HPA_LM_PTM_CTRL_PTMRSEN);
 }
@@ -124,7 +127,8 @@ static int cdns_pcie_hpa_host_bar_ib_config(struct cdns_pcie_rc *rc,
 	if (bar == RP_NO_BAR)
 		bar = (enum cdns_pcie_rp_bar)BAR_0;
 
-	value = cdns_pcie_hpa_readl(pcie, REG_BANK_IP_CFG_CTRL_REG, CDNS_PCIE_HPA_LM_RC_BAR_CFG);
+	value = cdns_pcie_hpa_readl(pcie, REG_BANK_IP_CFG_CTRL_REG,
+				    CDNS_PCIE_HPA_LM_RC_BAR_CFG);
 	value &= ~(HPA_LM_RC_BAR_CFG_CTRL_MEM_64BITS(bar) |
 		   HPA_LM_RC_BAR_CFG_CTRL_PREF_MEM_64BITS(bar) |
 		   HPA_LM_RC_BAR_CFG_CTRL_MEM_32BITS(bar) |
@@ -141,7 +145,8 @@ static int cdns_pcie_hpa_host_bar_ib_config(struct cdns_pcie_rc *rc,
 	}
 
 	value |= HPA_LM_RC_BAR_CFG_APERTURE(bar, aperture);
-	cdns_pcie_hpa_writel(pcie, REG_BANK_IP_CFG_CTRL_REG, CDNS_PCIE_HPA_LM_RC_BAR_CFG, value);
+	cdns_pcie_hpa_writel(pcie, REG_BANK_IP_CFG_CTRL_REG,
+			     CDNS_PCIE_HPA_LM_RC_BAR_CFG, value);
 
 	return 0;
 }
@@ -244,8 +249,8 @@ static int cdns_pcie_hpa_host_init_address_translation(struct cdns_pcie_rc *rc)
 
 	r++;
 	if (pcie->msg_res) {
-		cdns_pcie_hpa_set_outbound_region_for_normal_msg(pcie, busnr, 0, r,
-								 pcie->msg_res->start);
+		cdns_pcie_hpa_set_outbound_region_for_normal_msg(
+			pcie, busnr, 0, r, pcie->msg_res->start);
 
 		r++;
 	}
@@ -254,15 +259,13 @@ static int cdns_pcie_hpa_host_init_address_translation(struct cdns_pcie_rc *rc)
 		u64 pci_addr = res->start - entry->offset;
 
 		if (resource_type(res) == IORESOURCE_IO)
-			cdns_pcie_hpa_set_outbound_region(pcie, busnr, 0, r,
-							  true,
-							  pci_pio_to_address(res->start),
-							  pci_addr,
-							  resource_size(res));
+			cdns_pcie_hpa_set_outbound_region(
+				pcie, busnr, 0, r, true,
+				pci_pio_to_address(res->start), pci_addr,
+				resource_size(res));
 		else
 			cdns_pcie_hpa_set_outbound_region(pcie, busnr, 0, r,
-							  false,
-							  res->start,
+							  false, res->start,
 							  pci_addr,
 							  resource_size(res));
 
@@ -272,7 +275,8 @@ static int cdns_pcie_hpa_host_init_address_translation(struct cdns_pcie_rc *rc)
 	if (rc->no_inbound_map)
 		return 0;
 	else
-		return cdns_pcie_host_map_dma_ranges(rc, cdns_pcie_hpa_host_bar_ib_config);
+		return cdns_pcie_host_map_dma_ranges(
+			rc, cdns_pcie_hpa_host_bar_ib_config);
 }
 
 static int cdns_pcie_hpa_host_init(struct cdns_pcie_rc *rc)
@@ -313,16 +317,29 @@ int cdns_pcie_hpa_host_link_setup(struct cdns_pcie_rc *rc)
 }
 EXPORT_SYMBOL_GPL(cdns_pcie_hpa_host_link_setup);
 
+void cdns_pcie_hpa_host_disable(struct cdns_pcie_rc *rc)
+{
+	struct pci_host_bridge *bridge;
+
+	cdns_pcie_debugfs_deinit(&rc->pcie);
+	bridge = pci_host_bridge_from_priv(rc);
+	pci_lock_rescan_remove();
+	pci_stop_root_bus(bridge->bus);
+	pci_remove_root_bus(bridge->bus);
+	pci_unlock_rescan_remove();
+}
+EXPORT_SYMBOL_GPL(cdns_pcie_hpa_host_disable);
+
 int cdns_pcie_hpa_host_setup(struct cdns_pcie_rc *rc)
 {
 	struct device *dev = rc->pcie.dev;
 	struct platform_device *pdev = to_platform_device(dev);
 	struct device_node *np = dev->of_node;
 	struct pci_host_bridge *bridge;
-	enum   cdns_pcie_rp_bar bar;
+	enum cdns_pcie_rp_bar bar;
 	struct cdns_pcie *pcie;
 	struct resource *res;
-	int    ret;
+	int ret;
 
 	bridge = pci_host_bridge_from_priv(rc);
 	if (!bridge)
@@ -332,7 +349,8 @@ int cdns_pcie_hpa_host_setup(struct cdns_pcie_rc *rc)
 	pcie->is_rc = true;
 
 	if (!pcie->reg_base) {
-		pcie->reg_base = devm_platform_ioremap_resource_byname(pdev, "reg");
+		pcie->reg_base =
+			devm_platform_ioremap_resource_byname(pdev, "reg");
 		if (IS_ERR(pcie->reg_base)) {
 			dev_err(dev, "missing \"reg\"\n");
 			return PTR_ERR(pcie->reg_base);
@@ -352,7 +370,8 @@ int cdns_pcie_hpa_host_setup(struct cdns_pcie_rc *rc)
 		pcie->max_link_speed = of_pci_get_max_link_speed(np);
 
 	/* Put EROM Bar aperture to 0 */
-	cdns_pcie_hpa_writel(pcie, REG_BANK_IP_CFG_CTRL_REG, CDNS_PCIE_EROM, 0x0);
+	cdns_pcie_hpa_writel(pcie, REG_BANK_IP_CFG_CTRL_REG, CDNS_PCIE_EROM,
+			     0x0);
 
 	ret = cdns_pcie_hpa_host_link_setup(rc);
 	if (ret)
