@@ -735,12 +735,16 @@ config XILINX_ZYNQMP_DPDMA
 	  driver provides the dmaengine required by the DisplayPort subsystem
 	  display driver.
 
-config ARM_DMA350
-	tristate "ARM DMA350 support"
+config ARM_DMA350_CIX
+	tristate "Cix ARM DMA350 support"
+	depends on ARM64 || COMPILE_TEST
 	select DMA_ENGINE
 	select DMA_VIRTUAL_CHANNELS
 	help
-	  Enable support for ARM  DMA350 controller.
+	  Enable support for the Cix ARM DMA350 controller (vendor driver
+	  with shared-IRQ (ANYCH) support). This is separate from the
+	  upstream ARM_DMA350 driver which handles the "arm,dma-350"
+	  compatible.
 
 # driver files
 source "drivers/dma/amd/Kconfig"
