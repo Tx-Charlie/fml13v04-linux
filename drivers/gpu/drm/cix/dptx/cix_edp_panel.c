@@ -672,7 +672,7 @@ static int cix_edp_panel_probe(struct device *dev, const struct panel_desc *desc
 	if (has_acpi_companion(dev)) {
 		err = acpi_drm_get_panel_orientation(dev, &panel->orientation);
 	} else {
-		err = drm_of_get_panel_orientation(dev->of_node, &panel->orientation);
+		err = of_drm_get_panel_orientation(dev->of_node, &panel->orientation);
 	}
 	
 	if (err) {
