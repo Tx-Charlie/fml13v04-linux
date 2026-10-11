@@ -580,3 +580,5 @@ config CLK_FD_KUNIT_TEST
 	  Kunit test for the clk-fractional-divider type.
 
 endif
+
+source "drivers/clk/cix/Kconfig"
